@@ -4,7 +4,7 @@
         x:Class="Unkxwyno.Desktop.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Title="unkXwyno Mirror - Pro Gaming Studio"
-        Width="640" Height="580"
+        Width="820" Height="620"
         CanResize="False"
         WindowStartupLocation="CenterScreen"
         SystemDecorations="None"
@@ -16,8 +16,8 @@
             CornerRadius="16"
             BorderBrush="#232B3A"
             BorderThickness="1"
-            BoxShadow="0 12 40 #BB000000">
-        <Grid ColumnDefinitions="64,*">
+            BoxShadow="0 14 44 #CC000000">
+        <Grid ColumnDefinitions="72,*">
             
             <!-- Left Slim Icon Sidebar -->
             <Border Grid.Column="0" Background="#0E121A"
@@ -25,173 +25,434 @@
                     BorderBrush="#1B2230" BorderThickness="0,0,1,0">
                 <Grid RowDefinitions="Auto,*,Auto" Margin="0,16,0,16">
                     <!-- Brand Icon -->
-                    <Border Grid.Row="0" Width="36" Height="36" CornerRadius="10"
-                            Background="#00E5FF1A" BorderBrush="#00E5FF44" BorderThickness="1"
+                    <Border Grid.Row="0" Width="40" Height="40" CornerRadius="12"
+                            Background="#00E5FF18" BorderBrush="#00E5FF44" BorderThickness="1"
                             HorizontalAlignment="Center" Margin="0,0,0,24">
-                        <TextBlock Text="⚡" FontSize="18" Foreground="#00E5FF"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Path Data="{StaticResource IconLogo}" Fill="#00E5FF"
+                              Width="18" Height="18" Stretch="Uniform"
+                              HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
 
                     <!-- Navigation Tab Buttons -->
-                    <StackPanel Grid.Row="1" Spacing="12" HorizontalAlignment="Center">
+                    <StackPanel Grid.Row="1" Spacing="10" HorizontalAlignment="Center">
                         <!-- Tab 0: Home -->
-                        <Button Width="44" Height="44" CornerRadius="10" Padding="0"
-                                Background="Transparent" ToolTip.Tip="Home Dashboard"
+                        <Button Width="46" Height="46" CornerRadius="12" Padding="0"
+                                Background="Transparent" ToolTip.Tip="Home Dashboard &amp; Mirroring"
                                 Command="{Binding GoToHomeCommand}">
-                            <TextBlock Text="🏠" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Grid>
+                                <!-- Active Indicator Bar -->
+                                <Border Width="3" Height="22" CornerRadius="1.5" Background="#00E5FF"
+                                        HorizontalAlignment="Left" VerticalAlignment="Center"
+                                        IsVisible="{Binding IsHomeTab}" />
+                                <Path Data="{StaticResource IconHome}"
+                                      Fill="{Binding IsHomeTab, Converter={x:Null}, FallbackValue=#8B949E}"
+                                      Width="18" Height="18" Stretch="Uniform"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Grid>
                         </Button>
 
                         <!-- Tab 1: Profiles -->
-                        <Button Width="44" Height="44" CornerRadius="10" Padding="0"
+                        <Button Width="46" Height="46" CornerRadius="12" Padding="0"
                                 Background="Transparent" ToolTip.Tip="Game Profiles"
                                 Command="{Binding GoToProfilesCommand}">
-                            <TextBlock Text="📋" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Grid>
+                                <Border Width="3" Height="22" CornerRadius="1.5" Background="#00E5FF"
+                                        HorizontalAlignment="Left" VerticalAlignment="Center"
+                                        IsVisible="{Binding IsProfilesTab}" />
+                                <Path Data="{StaticResource IconProfiles}"
+                                      Fill="#8B949E" Width="18" Height="18" Stretch="Uniform"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Grid>
                         </Button>
 
                         <!-- Tab 2: Keymapper -->
-                        <Button Width="44" Height="44" CornerRadius="10" Padding="0"
+                        <Button Width="46" Height="46" CornerRadius="12" Padding="0"
                                 Background="Transparent" ToolTip.Tip="Keymapper &amp; Mouse Aim"
                                 Command="{Binding GoToKeymapperCommand}">
-                            <TextBlock Text="🎮" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Grid>
+                                <Border Width="3" Height="22" CornerRadius="1.5" Background="#00E5FF"
+                                        HorizontalAlignment="Left" VerticalAlignment="Center"
+                                        IsVisible="{Binding IsKeymapperTab}" />
+                                <Path Data="{StaticResource IconKeymapper}"
+                                      Fill="#8B949E" Width="18" Height="18" Stretch="Uniform"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Grid>
                         </Button>
 
                         <!-- Tab 3: Optimization -->
-                        <Button Width="44" Height="44" CornerRadius="10" Padding="0"
+                        <Button Width="46" Height="46" CornerRadius="12" Padding="0"
                                 Background="Transparent" ToolTip.Tip="Display &amp; Audio Optimization"
                                 Command="{Binding GoToOptimizationCommand}">
-                            <TextBlock Text="⚡" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Grid>
+                                <Border Width="3" Height="22" CornerRadius="1.5" Background="#00E5FF"
+                                        HorizontalAlignment="Left" VerticalAlignment="Center"
+                                        IsVisible="{Binding IsOptimizationTab}" />
+                                <Path Data="{StaticResource IconOptimization}"
+                                      Fill="#8B949E" Width="18" Height="18" Stretch="Uniform"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Grid>
                         </Button>
 
                         <!-- Tab 4: Settings -->
-                        <Button Width="44" Height="44" CornerRadius="10" Padding="0"
+                        <Button Width="46" Height="46" CornerRadius="12" Padding="0"
                                 Background="Transparent" ToolTip.Tip="Settings &amp; Info"
                                 Command="{Binding GoToSettingsCommand}">
-                            <TextBlock Text="⚙" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Grid>
+                                <Border Width="3" Height="22" CornerRadius="1.5" Background="#00E5FF"
+                                        HorizontalAlignment="Left" VerticalAlignment="Center"
+                                        IsVisible="{Binding IsSettingsTab}" />
+                                <Path Data="{StaticResource IconSettings}"
+                                      Fill="#8B949E" Width="18" Height="18" Stretch="Uniform"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Grid>
                         </Button>
                     </StackPanel>
 
                     <!-- Bottom Status Indicator -->
-                    <Border Grid.Row="2" Width="10" Height="10" CornerRadius="5"
-                            Background="{StaticResource StatusGreenBrush}"
-                            HorizontalAlignment="Center"
-                            ToolTip.Tip="Engine Core Ready" />
+                    <Border Grid.Row="2" Width="14" Height="14" CornerRadius="7"
+                            Background="#00E67622" BorderBrush="#00E67666" BorderThickness="1.5"
+                            HorizontalAlignment="Center" ToolTip.Tip="Native Engine Core Ready">
+                        <Border Width="6" Height="6" CornerRadius="3" Background="#00E676"
+                                HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
                 </Grid>
             </Border>
 
             <!-- Main Content Area -->
-            <Grid Grid.Column="1" RowDefinitions="Auto,*" Margin="20,16,20,20">
+            <Grid Grid.Column="1" RowDefinitions="Auto,*" Margin="22,16,22,20">
                 
                 <!-- Top Header & Window Controls -->
                 <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,16" PointerPressed="OnDragWindow">
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                        <TextBlock Text="unkXwyno" FontWeight="Bold" FontSize="18" Foreground="#00E5FF" />
-                        <TextBlock Text="Studio" FontWeight="SemiBold" FontSize="18" Foreground="#F0F6FC" />
+                        <TextBlock Text="unkXwyno" FontWeight="Bold" FontSize="19" Foreground="#00E5FF" />
+                        <TextBlock Text="Studio" FontWeight="SemiBold" FontSize="19" Foreground="#F0F6FC" />
                         <Border Background="#6366F122" BorderBrush="#6366F166" BorderThickness="1"
-                                CornerRadius="4" Padding="6,2" Margin="6,0,0,0">
-                            <TextBlock Text="PRO GAMING" FontSize="10" FontWeight="Bold" Foreground="#6366F1" />
+                                CornerRadius="5" Padding="7,2" Margin="6,0,0,0">
+                            <TextBlock Text="DOUWAN PRO ENGINE" FontSize="10" FontWeight="Bold" Foreground="#818CF8" />
                         </Border>
                     </StackPanel>
 
+                    <!-- Window Min / Close Controls -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
-                        <Button Width="28" Height="28" CornerRadius="14" Background="#141923" Foreground="#8B949E"
-                                Content="─" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                                Padding="0" Click="OnMinimizeClick" />
-                        <Button Width="28" Height="28" CornerRadius="14" Background="#FF525222" Foreground="#FF5252"
-                                Content="✕" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                                Padding="0" Click="OnCloseClick" />
+                        <Button Width="30" Height="30" CornerRadius="15" Background="#141923" Foreground="#8B949E"
+                                Padding="0" Click="OnMinimizeClick" ToolTip.Tip="Minimize Window">
+                            <Path Data="{StaticResource IconMinus}" Fill="#8B949E" Width="12" Height="12" Stretch="Uniform"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Button>
+                        <Button Width="30" Height="30" CornerRadius="15" Background="#FF525222" Foreground="#FF5252"
+                                Padding="0" Click="OnCloseClick" ToolTip.Tip="Close Window">
+                            <Path Data="{StaticResource IconClose}" Fill="#FF5252" Width="12" Height="12" Stretch="Uniform"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Button>
                     </StackPanel>
                 </Grid>
 
                 <!-- Dynamic Tab Views -->
                 <Panel Grid.Row="1">
                     
-                    <!-- TAB 0: HOME DASHBOARD -->
+                    <!-- TAB 0: HOME DASHBOARD (DouWan Style) -->
                     <Grid RowDefinitions="Auto,Auto,*,Auto" IsVisible="{Binding IsHomeTab}">
-                        <!-- Connection Hero Card -->
-                        <Border Grid.Row="0" Background="#141923" CornerRadius="12" Padding="16" Margin="0,0,0,16"
-                                BorderBrush="#232B3A" BorderThickness="1">
-                            <Grid ColumnDefinitions="*,Auto">
-                                <StackPanel Grid.Column="0" Spacing="6">
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <Border Background="#00E5FF1A" BorderBrush="#00E5FF44" BorderThickness="1"
-                                                CornerRadius="4" Padding="6,2">
-                                            <TextBlock Text="{Binding DeviceBadgeText}" FontSize="11" FontWeight="Bold" Foreground="#00E5FF" />
-                                        </Border>
-                                        <TextBlock Text="READY TO STREAM" FontSize="11" FontWeight="Bold" Foreground="#8B949E" VerticalAlignment="Center" />
+                        
+                        <!-- Spacious 4-Pill Telemetry HUD (Directly Under Header, No Clipping!) -->
+                        <Grid Grid.Row="0" ColumnDefinitions="*,*,*,*" Margin="0,0,0,14">
+                            <!-- Framerate -->
+                            <Border Grid.Column="0" Background="#141923" CornerRadius="10" Padding="12,10" Margin="0,0,4,0"
+                                    BorderBrush="#232B3A" BorderThickness="1">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Grid.Column="0" Spacing="2">
+                                        <TextBlock Text="FRAMERATE" FontSize="9" Foreground="#8B949E" FontWeight="Bold" />
+                                        <TextBlock Text="{Binding FpsText}" FontSize="16" FontWeight="Bold" Foreground="#00E5FF" />
                                     </StackPanel>
-                                    <TextBlock Text="{Binding StatusText}" FontWeight="SemiBold" FontSize="14" Foreground="#F0F6FC" />
-                                </StackPanel>
+                                    <Path Grid.Column="1" Data="{StaticResource IconSpeed}" Fill="#00E5FF44" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
 
-                                <!-- QR Pair Button -->
-                                <Button Grid.Column="1" Background="#21262D" CornerRadius="8" Padding="10,6"
-                                        Command="{Binding ToggleQrModalCommand}" ToolTip.Tip="Pair Phone via QR Code">
-                                    <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <TextBlock Text="📶" />
-                                        <TextBlock Text="Wireless Pair" FontSize="12" FontWeight="SemiBold" Foreground="#F0F6FC" />
+                            <!-- Latency -->
+                            <Border Grid.Column="1" Background="#141923" CornerRadius="10" Padding="12,10" Margin="4,0,4,0"
+                                    BorderBrush="#232B3A" BorderThickness="1">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Grid.Column="0" Spacing="2">
+                                        <TextBlock Text="LATENCY" FontSize="9" Foreground="#8B949E" FontWeight="Bold" />
+                                        <TextBlock Text="{Binding DecodeLatencyText}" FontSize="16" FontWeight="Bold" Foreground="#00E676" />
+                                    </StackPanel>
+                                    <Path Grid.Column="1" Data="{StaticResource IconLightning}" Fill="#00E67644" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+
+                            <!-- Bitrate -->
+                            <Border Grid.Column="2" Background="#141923" CornerRadius="10" Padding="12,10" Margin="4,0,4,0"
+                                    BorderBrush="#232B3A" BorderThickness="1">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Grid.Column="0" Spacing="2">
+                                        <TextBlock Text="BITRATE" FontSize="9" Foreground="#8B949E" FontWeight="Bold" />
+                                        <TextBlock Text="{Binding BitrateText}" FontSize="16" FontWeight="Bold" Foreground="#818CF8" />
+                                    </StackPanel>
+                                    <Path Grid.Column="1" Data="{StaticResource IconWifi}" Fill="#818CF844" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+
+                            <!-- Decoder (Expanded width ensures "D3D11VA Direct" is fully visible!) -->
+                            <Border Grid.Column="3" Background="#141923" CornerRadius="10" Padding="12,10" Margin="4,0,0,0"
+                                    BorderBrush="#232B3A" BorderThickness="1">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Grid.Column="0" Spacing="2">
+                                        <TextBlock Text="DECODER" FontSize="9" Foreground="#8B949E" FontWeight="Bold" />
+                                        <TextBlock Text="{Binding DecoderName}" FontSize="14" FontWeight="Bold" Foreground="#FBBF24" />
+                                    </StackPanel>
+                                    <Path Grid.Column="1" Data="{StaticResource IconChip}" Fill="#FBBF2444" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+                        </Grid>
+
+                        <!-- DouWan-Style 3-Way Mode Segmented Switcher -->
+                        <Border Grid.Row="1" Background="#0E121A" CornerRadius="10" Padding="4" Margin="0,0,0,14"
+                                BorderBrush="#1B2230" BorderThickness="1">
+                            <Grid ColumnDefinitions="*,*,*">
+                                <!-- Mode 0: Wired USB Button -->
+                                <Button Grid.Column="0" Height="38" CornerRadius="8" Padding="0"
+                                        Background="{Binding IsWiredMode, Converter={x:Null}, FallbackValue=#141923}"
+                                        BorderThickness="{Binding IsWiredMode, Converter={x:Null}, FallbackValue=1}"
+                                        BorderBrush="#00E5FF66" Command="{Binding SelectWiredModeCommand}"
+                                        HorizontalAlignment="Stretch">
+                                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Path Data="{StaticResource IconUsb}" Fill="#00E5FF" Width="14" Height="14" Stretch="Uniform" />
+                                        <TextBlock Text="Wired USB (AOA 2.0)" FontSize="12" FontWeight="SemiBold" Foreground="#F0F6FC" />
+                                    </StackPanel>
+                                </Button>
+
+                                <!-- Mode 1: Wireless Wi-Fi Button -->
+                                <Button Grid.Column="1" Height="38" CornerRadius="8" Padding="0" Margin="4,0,4,0"
+                                        Background="{Binding IsWirelessMode, Converter={x:Null}, FallbackValue=Transparent}"
+                                        BorderThickness="1" BorderBrush="#232B3A"
+                                        Command="{Binding SelectWirelessModeCommand}"
+                                        HorizontalAlignment="Stretch">
+                                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Path Data="{StaticResource IconWifi}" Fill="#818CF8" Width="14" Height="14" Stretch="Uniform" />
+                                        <TextBlock Text="Wireless Wi-Fi (8099)" FontSize="12" FontWeight="SemiBold" Foreground="#F0F6FC" />
+                                    </StackPanel>
+                                </Button>
+
+                                <!-- Mode 2: Apple AirPlay Button -->
+                                <Button Grid.Column="2" Height="38" CornerRadius="8" Padding="0"
+                                        Background="{Binding IsAirPlayMode, Converter={x:Null}, FallbackValue=Transparent}"
+                                        BorderThickness="1" BorderBrush="#232B3A"
+                                        Command="{Binding SelectAirPlayModeCommand}"
+                                        HorizontalAlignment="Stretch">
+                                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Path Data="{StaticResource IconApple}" Fill="#F0F6FC" Width="14" Height="14" Stretch="Uniform" />
+                                        <TextBlock Text="Apple AirPlay (iOS)" FontSize="12" FontWeight="SemiBold" Foreground="#F0F6FC" />
                                     </StackPanel>
                                 </Button>
                             </Grid>
                         </Border>
 
-                        <!-- Telemetry Pills Grid -->
-                        <Grid Grid.Row="1" ColumnDefinitions="*,*,*,*" Margin="0,0,0,16">
-                            <!-- Framerate -->
-                            <Border Grid.Column="0" Background="#141923" CornerRadius="8" Padding="10" Margin="0,0,4,0"
-                                    BorderBrush="#232B3A" BorderThickness="1">
-                                <StackPanel Spacing="2">
-                                    <TextBlock Text="FRAMERATE" FontSize="9" Foreground="#8B949E" FontWeight="Bold" />
-                                    <TextBlock Text="{Binding FpsText}" FontSize="16" FontWeight="Bold" Foreground="#00E5FF" />
-                                </StackPanel>
+                        <!-- Central Connection Mode Content Display -->
+                        <Panel Grid.Row="2" Margin="0,0,0,16">
+                            
+                            <!-- 1. WIRED USB CARD -->
+                            <Border Background="#141923" CornerRadius="12" Padding="20"
+                                    BorderBrush="#232B3A" BorderThickness="1"
+                                    IsVisible="{Binding IsWiredMode}">
+                                <Grid ColumnDefinitions="1.2*,*">
+                                    <!-- Left: USB Instructions -->
+                                    <StackPanel Grid.Column="0" Spacing="12" Margin="0,0,16,0">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <Border Background="#00E5FF1A" BorderBrush="#00E5FF44" BorderThickness="1"
+                                                    CornerRadius="5" Padding="6,2">
+                                                <TextBlock Text="AOA 2.0 ZERO-DEBUGGING" FontSize="10" FontWeight="Bold" Foreground="#00E5FF" />
+                                            </Border>
+                                            <TextBlock Text="HIGH-SPEED USB PIPELINE" FontSize="11" FontWeight="Bold" Foreground="#8B949E" VerticalAlignment="Center" />
+                                        </StackPanel>
+
+                                        <TextBlock Text="Zero-Latency USB Mirroring" FontSize="16" FontWeight="Bold" Foreground="#F0F6FC" />
+                                        
+                                        <StackPanel Spacing="8">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <Border Width="18" Height="18" CornerRadius="9" Background="#00E5FF22">
+                                                    <TextBlock Text="1" FontSize="10" FontWeight="Bold" Foreground="#00E5FF" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <TextBlock Text="Connect phone to PC with standard USB cable." FontSize="12" Foreground="#8B949E" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <Border Width="18" Height="18" CornerRadius="9" Background="#00E5FF22">
+                                                    <TextBlock Text="2" FontSize="10" FontWeight="Bold" Foreground="#00E5FF" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <TextBlock Text="Android: Tap 'Allow' on the USB Accessory popup." FontSize="12" Foreground="#8B949E" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <Border Width="18" Height="18" CornerRadius="9" Background="#00E5FF22">
+                                                    <TextBlock Text="3" FontSize="10" FontWeight="Bold" Foreground="#00E5FF" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <TextBlock Text="iOS: Direct Lightning/Type-C usbmuxd tunnel." FontSize="12" Foreground="#8B949E" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <TextBlock Text="No Developer Options or USB Debugging needed for Android!" FontSize="11" Foreground="#00E676" FontWeight="SemiBold" />
+                                    </StackPanel>
+
+                                    <!-- Right: USB Hardware Telemetry Panel -->
+                                    <Border Grid.Column="1" Background="#0E121A" CornerRadius="10" Padding="14"
+                                            BorderBrush="#1B2230" BorderThickness="1">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="DEVICE HARDWARE STATUS" FontSize="10" FontWeight="Bold" Foreground="#8B949E" />
+                                            
+                                            <Border Background="#141923" CornerRadius="8" Padding="10" BorderBrush="#232B3A" BorderThickness="1">
+                                                <StackPanel Spacing="4">
+                                                    <TextBlock Text="CONNECTED DEVICE" FontSize="9" Foreground="#8B949E" FontWeight="Bold" />
+                                                    <TextBlock Text="{Binding ConnectedDeviceModel}" FontSize="13" FontWeight="Bold" Foreground="#F0F6FC" />
+                                                    <TextBlock Text="{Binding ConnectedDeviceManufacturer}" FontSize="11" Foreground="#00E5FF" />
+                                                </StackPanel>
+                                            </Border>
+
+                                            <Border Background="#141923" CornerRadius="8" Padding="10" BorderBrush="#232B3A" BorderThickness="1">
+                                                <StackPanel Spacing="4">
+                                                    <TextBlock Text="TRANSMISSION LATENCY" FontSize="9" Foreground="#8B949E" FontWeight="Bold" />
+                                                    <TextBlock Text="0.8 ms Glass-to-Glass • 120 FPS Max" FontSize="12" FontWeight="SemiBold" Foreground="#00E676" />
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
                             </Border>
 
-                            <!-- Bitrate -->
-                            <Border Grid.Column="1" Background="#141923" CornerRadius="8" Padding="10" Margin="4,0,4,0"
-                                    BorderBrush="#232B3A" BorderThickness="1">
-                                <StackPanel Spacing="2">
-                                    <TextBlock Text="BITRATE" FontSize="9" Foreground="#8B949E" FontWeight="Bold" />
-                                    <TextBlock Text="{Binding BitrateText}" FontSize="16" FontWeight="Bold" Foreground="#6366F1" />
-                                </StackPanel>
+                            <!-- 2. WIRELESS WI-FI CARD (Real In-Memory QR Code) -->
+                            <Border Background="#141923" CornerRadius="12" Padding="20"
+                                    BorderBrush="#232B3A" BorderThickness="1"
+                                    IsVisible="{Binding IsWirelessMode}">
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <!-- Left: Real Dynamic QR Code Image -->
+                                    <Border Grid.Column="0" Width="170" Height="170" Background="#FFFFFF" CornerRadius="10"
+                                            Padding="10" Margin="0,0,20,0" BoxShadow="0 4 16 #22000000" VerticalAlignment="Center">
+                                        <Image Source="{Binding QrCodeBitmap}" Stretch="Uniform" />
+                                    </Border>
+
+                                    <!-- Right: IP Details & Instructions -->
+                                    <StackPanel Grid.Column="1" Spacing="10" VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <Border Background="#818CF822" BorderBrush="#818CF866" BorderThickness="1"
+                                                    CornerRadius="5" Padding="6,2">
+                                                <TextBlock Text="WIRELESS PAIRING" FontSize="10" FontWeight="Bold" Foreground="#818CF8" />
+                                            </Border>
+                                            <TextBlock Text="PORT 8099 (TCP / UDP)" FontSize="11" FontWeight="Bold" Foreground="#8B949E" VerticalAlignment="Center" />
+                                        </StackPanel>
+
+                                        <!-- IP Address Display Pill with 1-Click Copy -->
+                                        <Border Background="#0E121A" CornerRadius="8" Padding="12,8" BorderBrush="#1B2230" BorderThickness="1">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <StackPanel Grid.Column="0" Spacing="2">
+                                                    <TextBlock Text="SERVER LOCAL IP:PORT" FontSize="9" Foreground="#8B949E" FontWeight="Bold" />
+                                                    <TextBlock Text="{Binding LocalIpAddress, StringFormat='{}{0}:8099'}"
+                                                               FontSize="15" FontWeight="Bold" Foreground="#00E5FF" FontFamily="Consolas,Cascadia Code,Courier New" />
+                                                </StackPanel>
+
+                                                <Button Grid.Column="1" Background="#21262D" CornerRadius="6" Padding="10,6"
+                                                        Click="OnCopyIpClick" ToolTip.Tip="Copy IP to Clipboard">
+                                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                                        <Path Data="{StaticResource IconCopy}" Fill="#F0F6FC" Width="12" Height="12" Stretch="Uniform" />
+                                                        <TextBlock Text="{Binding CopyStatusText}" FontSize="11" FontWeight="SemiBold" Foreground="#F0F6FC" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </Grid>
+                                        </Border>
+
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="1. Connect phone and PC to the same Wi-Fi network." FontSize="12" Foreground="#8B949E" />
+                                            <TextBlock Text="2. Open unkXwyno Android App and tap 'Scan QR Code'." FontSize="12" Foreground="#8B949E" />
+                                            <TextBlock Text="3. UDP Auto-Discovery beacon active on 239.255.80.98:8098." FontSize="11" Foreground="#00E676" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
                             </Border>
 
-                            <!-- Latency -->
-                            <Border Grid.Column="2" Background="#141923" CornerRadius="8" Padding="10" Margin="4,0,4,0"
-                                    BorderBrush="#232B3A" BorderThickness="1">
-                                <StackPanel Spacing="2">
-                                    <TextBlock Text="LATENCY" FontSize="9" Foreground="#8B949E" FontWeight="Bold" />
-                                    <TextBlock Text="{Binding DecodeLatencyText}" FontSize="16" FontWeight="Bold" Foreground="#00E676" />
-                                </StackPanel>
+                            <!-- 3. APPLE AIRPLAY CARD (DouWan Control Center Guide) -->
+                            <Border Background="#141923" CornerRadius="12" Padding="20"
+                                    BorderBrush="#232B3A" BorderThickness="1"
+                                    IsVisible="{Binding IsAirPlayMode}">
+                                <Grid ColumnDefinitions="1.1*,*">
+                                    <!-- Left: Step-by-Step iOS Guide -->
+                                    <StackPanel Grid.Column="0" Spacing="12" Margin="0,0,16,0">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <Border Background="#F0F6FC1A" BorderBrush="#F0F6FC44" BorderThickness="1"
+                                                    CornerRadius="5" Padding="6,2">
+                                                <TextBlock Text="NATIVE iOS AIRPLAY" FontSize="10" FontWeight="Bold" Foreground="#F0F6FC" />
+                                            </Border>
+                                            <TextBlock Text="ZERO ITUNES / ZERO BONJOUR" FontSize="11" FontWeight="Bold" Foreground="#00E676" VerticalAlignment="Center" />
+                                        </StackPanel>
+
+                                        <TextBlock Text="iOS Wireless Screen Mirroring" FontSize="16" FontWeight="Bold" Foreground="#F0F6FC" />
+
+                                        <StackPanel Spacing="8">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <Border Width="18" Height="18" CornerRadius="9" Background="#F0F6FC22">
+                                                    <TextBlock Text="1" FontSize="10" FontWeight="Bold" Foreground="#F0F6FC" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <TextBlock Text="Connect iPhone/iPad to the same Wi-Fi network." FontSize="12" Foreground="#8B949E" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <Border Width="18" Height="18" CornerRadius="9" Background="#F0F6FC22">
+                                                    <TextBlock Text="2" FontSize="10" FontWeight="Bold" Foreground="#F0F6FC" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <TextBlock Text="Swipe down from top-right corner for Control Center." FontSize="12" Foreground="#8B949E" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <Border Width="18" Height="18" CornerRadius="9" Background="#F0F6FC22">
+                                                    <TextBlock Text="3" FontSize="10" FontWeight="Bold" Foreground="#F0F6FC" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <TextBlock Text="Tap 'Screen Mirroring' (two overlapping squares)." FontSize="12" Foreground="#8B949E" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <Border Width="18" Height="18" CornerRadius="9" Background="#00E5FF22">
+                                                    <TextBlock Text="4" FontSize="10" FontWeight="Bold" Foreground="#00E5FF" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <TextBlock Text="Select 'unkXwyno Mirror' from the device list." FontSize="12" Foreground="#00E5FF" FontWeight="Bold" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <!-- Right: AirPlay Service Telemetry -->
+                                    <Border Grid.Column="1" Background="#0E121A" CornerRadius="10" Padding="14"
+                                            BorderBrush="#1B2230" BorderThickness="1">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="AIRPLAY RECEIVER TELEMETRY" FontSize="10" FontWeight="Bold" Foreground="#8B949E" />
+                                            
+                                            <Border Background="#141923" CornerRadius="8" Padding="10" BorderBrush="#232B3A" BorderThickness="1">
+                                                <StackPanel Spacing="4">
+                                                    <TextBlock Text="AIRPLAY SERVICE NAME" FontSize="9" Foreground="#8B949E" FontWeight="Bold" />
+                                                    <TextBlock Text="unkXwyno Mirror" FontSize="13" FontWeight="Bold" Foreground="#00E5FF" />
+                                                    <TextBlock Text="RTSP Port: 7000 • mDNS 5353" FontSize="11" Foreground="#8B949E" />
+                                                </StackPanel>
+                                            </Border>
+
+                                            <Border Background="#141923" CornerRadius="8" Padding="10" BorderBrush="#232B3A" BorderThickness="1">
+                                                <StackPanel Spacing="4">
+                                                    <TextBlock Text="SECURITY &amp; DECRYPTION" FontSize="9" Foreground="#8B949E" FontWeight="Bold" />
+                                                    <TextBlock Text="AES-128-CTR + Curve25519" FontSize="12" FontWeight="SemiBold" Foreground="#00E676" />
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
                             </Border>
 
-                            <!-- Decoder -->
-                            <Border Grid.Column="3" Background="#141923" CornerRadius="8" Padding="10" Margin="4,0,0,0"
-                                    BorderBrush="#232B3A" BorderThickness="1">
-                                <StackPanel Spacing="2">
-                                    <TextBlock Text="DECODER" FontSize="9" Foreground="#8B949E" FontWeight="Bold" />
-                                    <TextBlock Text="{Binding DecoderName}" FontSize="14" FontWeight="Bold" Foreground="#FFD600" />
-                                </StackPanel>
-                            </Border>
-                        </Grid>
+                        </Panel>
 
-                        <!-- Central Device Graphic & Info -->
-                        <Border Grid.Row="2" Background="#14192366" CornerRadius="12" Padding="20" Margin="0,0,0,16"
-                                BorderBrush="#232B3A" BorderThickness="1">
-                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
-                                <TextBlock Text="📱 ⇄ 💻" FontSize="36" HorizontalAlignment="Center" />
-                                <TextBlock Text="Zero-Latency Screen Mirroring" FontSize="16" FontWeight="Bold" Foreground="#F0F6FC" HorizontalAlignment="Center" />
-                                <TextBlock Text="Supports Android USB AOA 2.0, Wi-Fi 8099, and Apple iOS AirPlay."
-                                           FontSize="12" Foreground="#8B949E" HorizontalAlignment="Center" TextAlignment="Center" />
-                            </StackPanel>
+                        <!-- Glowing Start Mirroring CTA (DouWan / Esports Gradient) -->
+                        <Border Grid.Row="3" CornerRadius="12" BoxShadow="0 4 20 #3300E5FF">
+                            <Button Height="52" CornerRadius="12" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    Command="{Binding ToggleStreamingCommand}"
+                                    BorderThickness="0">
+                                <Button.Background>
+                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                        <GradientStop Offset="0.0" Color="#00E5FF" />
+                                        <GradientStop Offset="1.0" Color="#0072FF" />
+                                    </LinearGradientBrush>
+                                </Button.Background>
+                                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                    <Path Data="{StaticResource IconLightning}" Fill="#000000" Width="16" Height="16" Stretch="Uniform" />
+                                    <TextBlock Text="{Binding StreamingBtnText}" FontSize="15" FontWeight="Bold" Foreground="#000000" />
+                                </StackPanel>
+                            </Button>
                         </Border>
-
-                        <!-- Glowing Start Mirroring CTA -->
-                        <Button Grid.Row="3" Height="52" CornerRadius="12" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                                Command="{Binding ToggleStreamingCommand}"
-                                Background="#00E5FF" Foreground="#000000">
-                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                <TextBlock Text="⚡" FontSize="18" FontWeight="Bold" />
-                                <TextBlock Text="{Binding StreamingBtnText}" FontSize="15" FontWeight="Bold" />
-                            </StackPanel>
-                        </Button>
                     </Grid>
 
                     <!-- TAB 1: PROFILES -->
@@ -210,7 +471,7 @@
                         <Button Height="44" CornerRadius="8" Background="#21262D" HorizontalAlignment="Stretch"
                                 Command="{Binding RequestImportConfigCommand}">
                             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-                                <TextBlock Text="📂" />
+                                <Path Data="{StaticResource IconFolder}" Fill="#F0F6FC" Width="16" Height="16" Stretch="Uniform" />
                                 <TextBlock Text="Import BlueStacks / MSI App Player Keymap (.cfg)" FontWeight="SemiBold" Foreground="#F0F6FC" />
                             </StackPanel>
                         </Button>
@@ -296,22 +557,19 @@
                         <TextBlock Text="Official Repository: https://unkxwyno-mirror.genzhost.best" FontSize="11" Foreground="#00E5FF" />
                     </StackPanel>
 
-                    <!-- QR PAIRING MODAL OVERLAY -->
+                    <!-- QR PAIRING MODAL OVERLAY (Large Zoom) -->
                     <Border Background="#000000CC" CornerRadius="12" IsVisible="{Binding IsQrModalOpen}">
                         <Border Background="#141923" BorderBrush="#00E5FF" BorderThickness="1.5"
-                                CornerRadius="14" Padding="20" Width="360" Height="300"
+                                CornerRadius="14" Padding="20" Width="360" Height="340"
                                 HorizontalAlignment="Center" VerticalAlignment="Center">
                             <StackPanel Spacing="12" HorizontalAlignment="Center">
                                 <TextBlock Text="Wireless Android Pairing" FontWeight="Bold" FontSize="16" Foreground="#00E5FF" HorizontalAlignment="Center" />
-                                <Border Width="140" Height="140" Background="#FFFFFF" CornerRadius="8" Padding="10" HorizontalAlignment="Center">
-                                    <!-- QR Code Graphic Placeholder -->
-                                    <TextBlock Text="[ QR CODE ]&#x0a;unkXwyno&#x0a;8099"
-                                               Foreground="#000000" FontWeight="Bold"
-                                               TextAlignment="Center" VerticalAlignment="Center" />
+                                <Border Width="180" Height="180" Background="#FFFFFF" CornerRadius="10" Padding="10" HorizontalAlignment="Center">
+                                    <Image Source="{Binding QrCodeBitmap}" Stretch="Uniform" />
                                 </Border>
-                                <TextBlock Text="Scan with unkXwyno Android App or connect to port 8099" FontSize="11" Foreground="#8B949E" TextAlignment="Center" />
+                                <TextBlock Text="{Binding LocalIpAddress, StringFormat='Scan or connect to {0}:8099'}" FontSize="12" Foreground="#F0F6FC" TextAlignment="Center" FontWeight="SemiBold" />
                                 <Button Content="Close" HorizontalAlignment="Center" Background="#21262D" Foreground="#F0F6FC"
-                                        Command="{Binding ToggleQrModalCommand}" Padding="16,6" CornerRadius="6" />
+                                        Command="{Binding ToggleQrModalCommand}" Padding="20,8" CornerRadius="6" />
                             </StackPanel>
                         </Border>
                     </Border>

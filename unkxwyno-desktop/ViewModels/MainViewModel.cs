@@ -1,6 +1,6 @@
 /**
  * @file MainViewModel.cs
- * @brief ViewModel for unkXwyno Pro Gaming Studio & Telemetry Dashboard.
+ * @brief ViewModel for unkXwyno Pro Gaming Studio & Telemetry Dashboard (DouWan-Inspired Design).
  * @version 1.0.0
  * 
  * Copyright (c) 2026 unkXwyno. Open source under the MIT License.
@@ -9,6 +9,8 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Unkxwyno.Desktop.Interop;
@@ -39,11 +41,50 @@ namespace Unkxwyno.Desktop.ViewModels
             OnPropertyChanged(nameof(IsSettingsTab));
         }
 
+        // Connection Modes: 0: Wired USB, 1: Wireless Wi-Fi, 2: Apple AirPlay
         [ObservableProperty]
-        private string _statusText = "Ready - Connect device via USB or Wi-Fi";
+        private int _selectedConnectionMode = 0;
+
+        public bool IsWiredMode => SelectedConnectionMode == 0;
+        public bool IsWirelessMode => SelectedConnectionMode == 1;
+        public bool IsAirPlayMode => SelectedConnectionMode == 2;
+
+        partial void OnSelectedConnectionModeChanged(int value)
+        {
+            OnPropertyChanged(nameof(IsWiredMode));
+            OnPropertyChanged(nameof(IsWirelessMode));
+            OnPropertyChanged(nameof(IsAirPlayMode));
+        }
+
+        [ObservableProperty]
+        private string _statusText = "Ready - Connect device via USB, Wi-Fi, or AirPlay";
 
         [ObservableProperty]
         private string _deviceBadgeText = "USB / Wi-Fi / AirPlay Ready";
+
+        [ObservableProperty]
+        private string _connectedDeviceModel = "Auto-Scanning USB Accessories...";
+
+        [ObservableProperty]
+        private string _connectedDeviceManufacturer = "Android / Apple Device";
+
+        [ObservableProperty]
+        private string _connectionProtocol = "AOA 2.0 / Wi-Fi / AirPlay";
+
+        [ObservableProperty]
+        private string _localIpAddress = "192.168.1.4";
+
+        [ObservableProperty]
+        private int _streamPort = 8099;
+
+        [ObservableProperty]
+        private int _airPlayPort = 7000;
+
+        [ObservableProperty]
+        private string _copyStatusText = "Copy IP:Port";
+
+        [ObservableProperty]
+        private Bitmap? _qrCodeBitmap;
 
         [ObservableProperty]
         private bool _isStreaming;
@@ -117,6 +158,17 @@ namespace Unkxwyno.Desktop.ViewModels
         {
             _engineService = engineService;
 
+            // Auto-detect Preferred Local LAN IP address
+            try
+            {
+                LocalIpAddress = QrCodeService.GetPreferredLocalIpAddress();
+                QrCodeBitmap = QrCodeService.GenerateQrBitmap($"unkxwyno://connect?ip={LocalIpAddress}&port={StreamPort}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[QR] Generation exception: {ex.Message}");
+            }
+
             _engineService.OnDeviceStateChanged += (dev, state) =>
             {
                 StatusText = state switch
@@ -125,7 +177,21 @@ namespace Unkxwyno.Desktop.ViewModels
                     UnkxwynoDeviceState.Streaming => $"Streaming: {dev.ModelName} (Ultra-Low Latency)",
                     UnkxwynoDeviceState.Connecting => "Negotiating AOA 2.0 Accessory Handshake...",
                     UnkxwynoDeviceState.Error => "USB Transmission Error",
-                    _ => "Ready - Connect phone via USB or Wi-Fi"
+                    _ => "Ready - Connect phone via USB, Wi-Fi, or AirPlay"
+                };
+
+                ConnectedDeviceModel = state switch
+                {
+                    UnkxwynoDeviceState.Connected => dev.ModelName,
+                    UnkxwynoDeviceState.Streaming => dev.ModelName,
+                    _ => "Auto-Scanning USB Accessories..."
+                };
+
+                ConnectedDeviceManufacturer = state switch
+                {
+                    UnkxwynoDeviceState.Connected => dev.Manufacturer,
+                    UnkxwynoDeviceState.Streaming => dev.Manufacturer,
+                    _ => "Android / Apple Device"
                 };
 
                 DeviceBadgeText = state switch
@@ -172,6 +238,15 @@ namespace Unkxwyno.Desktop.ViewModels
 
         [RelayCommand]
         public void GoToSettings() => SelectedTabIndex = 4;
+
+        [RelayCommand]
+        public void SelectWiredMode() => SelectedConnectionMode = 0;
+
+        [RelayCommand]
+        public void SelectWirelessMode() => SelectedConnectionMode = 1;
+
+        [RelayCommand]
+        public void SelectAirPlayMode() => SelectedConnectionMode = 2;
 
         [RelayCommand]
         public void ToggleQrModal()
