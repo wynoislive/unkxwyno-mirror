@@ -26,7 +26,7 @@ namespace Unkxwyno.Desktop.Services
         public override string ToString() => $"{Model} ({Serial})";
     }
 
-    public class AdbDeviceService : IDisposable
+    public class AdbDeviceService : IAdbDeviceService
     {
         private string? _adbPath;
         private readonly System.Timers.Timer _pollTimer;
@@ -41,7 +41,17 @@ namespace Unkxwyno.Desktop.Services
         {
             ResolveAdbBinary();
             _pollTimer = new System.Timers.Timer(1500); // 1.5s device detection loop
-            _pollTimer.Elapsed += async (s, e) => await RefreshDevicesAsync();
+            _pollTimer.Elapsed += async (s, e) =>
+            {
+                try
+                {
+                    await RefreshDevicesAsync().ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    OnLog?.Invoke($"[ADB Poll Exception] {ex.Message}");
+                }
+            };
             _pollTimer.Start();
         }
 
@@ -165,6 +175,22 @@ namespace Unkxwyno.Desktop.Services
             catch (Exception ex)
             {
                 OnLog?.Invoke($"[ADB] Tunnel setup exception: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> SetupPortReverseAsync(string? serial = null, int port = 8099)
+        {
+            try
+            {
+                var target = string.IsNullOrEmpty(serial) ? "" : $"-s {serial} ";
+                var resReverse = await RunAdbCommandAsync($"{target}reverse tcp:{port} tcp:{port}").ConfigureAwait(false);
+                OnLog?.Invoke($"[ADB] Port reverse active: {resReverse.Trim()}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                OnLog?.Invoke($"[ADB] Reverse setup exception: {ex.Message}");
                 return false;
             }
         }

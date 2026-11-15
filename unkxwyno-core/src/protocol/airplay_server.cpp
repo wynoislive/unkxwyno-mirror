@@ -16,21 +16,48 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <iphlpapi.h>
+#include <bcrypt.h>
 #include <iostream>
 #include <sstream>
 #include <cstring>
 #include <chrono>
 #include <vector>
+#include <algorithm>
 
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "iphlpapi.lib")
+#pragma comment(lib, "bcrypt.lib")
 
 namespace unkxwyno::protocol {
 
-// Compact AES-128-CTR Decryption implementation (Zero OpenSSL dependency)
+// Hardware-accelerated / Standard CNG AES-128-CTR Decryption implementation (Zero OpenSSL dependency)
 static void Aes128CtrCrypt(const uint8_t key[16], uint8_t iv[16], uint8_t* data, size_t length) {
-    for (size_t i = 0; i < length; ++i) {
-        data[i] ^= key[i % 16] ^ iv[i % 16];
+    BCRYPT_ALG_HANDLE hAlg = nullptr;
+    if (BCryptOpenAlgorithmProvider(&hAlg, BCRYPT_AES_ALGORITHM, nullptr, 0) == 0) {
+        BCryptSetProperty(hAlg, BCRYPT_CHAINING_MODE, (PUCHAR)BCRYPT_CHAIN_MODE_ECB, sizeof(BCRYPT_CHAIN_MODE_ECB), 0);
+        BCRYPT_KEY_HANDLE hKey = nullptr;
+        if (BCryptGenerateSymmetricKey(hAlg, &hKey, nullptr, 0, (PUCHAR)key, 16, 0) == 0) {
+            uint8_t counter[16];
+            std::memcpy(counter, iv, 16);
+            uint8_t encrypted_counter[16];
+            ULONG result = 0;
+
+            size_t offset = 0;
+            while (offset < length) {
+                BCryptEncrypt(hKey, counter, 16, nullptr, nullptr, 0, encrypted_counter, 16, &result, 0);
+                size_t block_bytes = std::min(static_cast<size_t>(16), length - offset);
+                for (size_t b = 0; b < block_bytes; ++b) {
+                    data[offset + b] ^= encrypted_counter[b];
+                }
+                offset += block_bytes;
+                // Increment 128-bit big-endian counter
+                for (int c = 15; c >= 0; --c) {
+                    if (++counter[c] != 0) break;
+                }
+            }
+            BCryptDestroyKey(hKey);
+        }
+        BCryptCloseAlgorithmProvider(hAlg, 0);
     }
 }
 
@@ -410,12 +437,14 @@ void AirPlayServer::RtspServerThreadProc(uint16_t port) {
                     req_buf[n] = '\0';
                     std::string req(req_buf, n);
 
-                    // Extract CSeq
+                    // Extract CSeq safely
                     std::string cseq = "1";
                     size_t cseq_pos = req.find("CSeq: ");
                     if (cseq_pos != std::string::npos) {
                         size_t end_line = req.find("\r\n", cseq_pos);
-                        cseq = req.substr(cseq_pos + 6, end_line - (cseq_pos + 6));
+                        if (end_line != std::string::npos && end_line > cseq_pos + 6) {
+                            cseq = req.substr(cseq_pos + 6, end_line - (cseq_pos + 6));
+                        }
                     }
 
                     std::ostringstream resp;

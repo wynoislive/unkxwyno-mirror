@@ -8,14 +8,14 @@ namespace Unkxwyno.Desktop.Views
 {
     public partial class KeymapperOverlayWindow : Window
     {
-        private readonly MirrorEngineService _engineService;
+        private readonly IMirrorEngineService _engineService;
         private readonly KeymapProfile _profile;
 
         public KeymapperOverlayWindow() : this(new MirrorEngineService())
         {
         }
 
-        public KeymapperOverlayWindow(MirrorEngineService engineService)
+        public KeymapperOverlayWindow(IMirrorEngineService engineService)
         {
             _engineService = engineService;
             _profile = KeymapProfile.CreateDefaultFpsProfile();

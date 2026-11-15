@@ -252,18 +252,21 @@ void MfVideoDecoder::ProcessOutputSamples() {
                 dxgi_buf->GetResource(IID_PPV_ARGS(&d3d_tex));
                 frame.native_surface = d3d_tex.Get();
                 frame.is_hardware_surface = true;
-            } else {
-                // Software buffer fallback
+                if (frame_callback_) {
+                    frame_callback_(frame);
+                }
+            } else if (media_buf) {
+                // Software buffer fallback: keep buffer locked while consumer reads raw_pixels
                 BYTE* p_bytes = nullptr;
                 DWORD cur_len = 0;
-                media_buf->Lock(&p_bytes, nullptr, &cur_len);
-                frame.raw_pixels = p_bytes;
-                frame.is_hardware_surface = false;
-                media_buf->Unlock();
-            }
-
-            if (frame_callback_) {
-                frame_callback_(frame);
+                if (SUCCEEDED(media_buf->Lock(&p_bytes, nullptr, &cur_len))) {
+                    frame.raw_pixels = p_bytes;
+                    frame.is_hardware_surface = false;
+                    if (frame_callback_) {
+                        frame_callback_(frame);
+                    }
+                    media_buf->Unlock();
+                }
             }
         }
 

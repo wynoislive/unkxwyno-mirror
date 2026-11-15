@@ -241,33 +241,49 @@ void D3D11Renderer::RenderFrame(const decoder::DecodedFrame& frame) {
 
     if (frame.is_hardware_surface && frame.native_surface) {
         // ZERO-COPY GPU PRESENTATION:
-        // Copy hardware decoded surface directly to back buffer
+        // Copy hardware decoded surface directly to back buffer when formats and dimensions match
         ComPtr<ID3D11Texture2D> back_buffer;
         if (SUCCEEDED(swap_chain_->GetBuffer(0, IID_PPV_ARGS(&back_buffer)))) {
             auto* src_tex = static_cast<ID3D11Texture2D*>(frame.native_surface);
-            d3d_context_->CopyResource(back_buffer.Get(), src_tex);
+            D3D11_TEXTURE2D_DESC src_desc{};
+            src_tex->GetDesc(&src_desc);
+            D3D11_TEXTURE2D_DESC bb_desc{};
+            back_buffer->GetDesc(&bb_desc);
+
+            if (src_desc.Format == bb_desc.Format && src_desc.Width == bb_desc.Width && src_desc.Height == bb_desc.Height) {
+                d3d_context_->CopyResource(back_buffer.Get(), src_tex);
+            } else if (src_desc.Format == bb_desc.Format) {
+                UINT copy_w = std::min(src_desc.Width, bb_desc.Width);
+                UINT copy_h = std::min(src_desc.Height, bb_desc.Height);
+                D3D11_BOX box{ 0, 0, 0, copy_w, copy_h, 1 };
+                d3d_context_->CopySubresourceRegion(back_buffer.Get(), 0, 0, 0, 0, src_tex, 0, &box);
+            }
         }
     } else if (frame.raw_pixels != nullptr && frame.width > 0 && frame.height > 0) {
         // Software decoded buffer presentation
-        if (!software_texture_ || software_tex_w_ != frame.width || software_tex_h_ != frame.height) {
-            D3D11_TEXTURE2D_DESC desc{};
-            desc.Width = static_cast<UINT>(frame.width);
-            desc.Height = static_cast<UINT>(frame.height);
-            desc.MipLevels = 1;
-            desc.ArraySize = 1;
-            desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-            desc.SampleDesc.Count = 1;
-            desc.Usage = D3D11_USAGE_DEFAULT;
-            desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-            if (SUCCEEDED(d3d_device_->CreateTexture2D(&desc, nullptr, &software_texture_))) {
-                software_tex_w_ = frame.width;
-                software_tex_h_ = frame.height;
+        ComPtr<ID3D11Texture2D> back_buffer;
+        if (SUCCEEDED(swap_chain_->GetBuffer(0, IID_PPV_ARGS(&back_buffer)))) {
+            D3D11_TEXTURE2D_DESC bb_desc{};
+            back_buffer->GetDesc(&bb_desc);
+
+            if (!software_texture_ || software_tex_w_ != bb_desc.Width || software_tex_h_ != bb_desc.Height) {
+                D3D11_TEXTURE2D_DESC desc{};
+                desc.Width = bb_desc.Width;
+                desc.Height = bb_desc.Height;
+                desc.MipLevels = 1;
+                desc.ArraySize = 1;
+                desc.Format = bb_desc.Format;
+                desc.SampleDesc.Count = 1;
+                desc.Usage = D3D11_USAGE_DEFAULT;
+                desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+                if (SUCCEEDED(d3d_device_->CreateTexture2D(&desc, nullptr, &software_texture_))) {
+                    software_tex_w_ = bb_desc.Width;
+                    software_tex_h_ = bb_desc.Height;
+                }
             }
-        }
-        if (software_texture_) {
-            d3d_context_->UpdateSubresource(software_texture_.Get(), 0, nullptr, frame.raw_pixels, static_cast<UINT>(frame.width * 4), 0);
-            ComPtr<ID3D11Texture2D> back_buffer;
-            if (SUCCEEDED(swap_chain_->GetBuffer(0, IID_PPV_ARGS(&back_buffer)))) {
+            if (software_texture_) {
+                UINT row_pitch = static_cast<UINT>(frame.width * 4);
+                d3d_context_->UpdateSubresource(software_texture_.Get(), 0, nullptr, frame.raw_pixels, row_pitch, 0);
                 d3d_context_->CopyResource(back_buffer.Get(), software_texture_.Get());
             }
         }

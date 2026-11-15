@@ -82,6 +82,21 @@ bool WasapiAudioRenderer::Initialize(uint32_t sample_rate, uint16_t channels, ui
         return false;
     }
 
+    is_float_format_ = false;
+    mix_channels_ = mix_format->nChannels;
+    mix_sample_rate_ = mix_format->nSamplesPerSec;
+
+    if (mix_format->wFormatTag == WAVE_FORMAT_IEEE_FLOAT) {
+        is_float_format_ = true;
+    } else if (mix_format->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
+        auto* ext = reinterpret_cast<WAVEFORMATEXTENSIBLE*>(mix_format);
+        // KSDATAFORMAT_SUBTYPE_IEEE_FLOAT {00000003-0000-0010-8000-00aa00389b71}
+        static const GUID kIeeeFloatGuid = { 0x00000003, 0x0000, 0x0010, { 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
+        if (std::memcmp(&ext->SubFormat, &kIeeeFloatGuid, sizeof(GUID)) == 0) {
+            is_float_format_ = true;
+        }
+    }
+
     // Request 10ms shared buffer period (100,000 in 100ns units)
     REFERENCE_TIME requested_duration = 100000;
     hr = audio_client_->Initialize(
@@ -203,32 +218,44 @@ void WasapiAudioRenderer::PlaybackThreadProc() {
             BYTE* buffer = nullptr;
             hr = render_client_->GetBuffer(frames_needed, &buffer);
             if (SUCCEEDED(hr)) {
-                size_t bytes_to_read = frames_needed * frame_size_bytes_;
+                size_t input_bytes_needed = frames_needed * frame_size_bytes_;
+                std::vector<uint8_t> pcm_chunk(input_bytes_needed, 0);
+
                 std::unique_lock<std::mutex> lock(ring_mutex_);
-
-                size_t bytes_available = ring_available_bytes_;
-                size_t actual_bytes = std::min(bytes_to_read, bytes_available);
-
-                // Read available PCM samples
+                size_t actual_bytes = std::min(input_bytes_needed, ring_available_bytes_);
                 for (size_t i = 0; i < actual_bytes; ++i) {
-                    buffer[i] = ring_buffer_[ring_read_pos_];
+                    pcm_chunk[i] = ring_buffer_[ring_read_pos_];
                     ring_read_pos_ = (ring_read_pos_ + 1) % ring_capacity_;
                 }
                 ring_available_bytes_ -= actual_bytes;
                 lock.unlock();
 
-                // If starved, pad remaining buffer with silence
-                if (actual_bytes < bytes_to_read) {
-                    std::memset(buffer + actual_bytes, 0, bytes_to_read - actual_bytes);
-                }
-
-                // Apply volume scaling if needed
                 float vol = volume_.load();
-                if (vol < 0.999f && bits_per_sample_ == 16) {
-                    auto* samples16 = reinterpret_cast<int16_t*>(buffer);
-                    size_t sample_count = bytes_to_read / sizeof(int16_t);
-                    for (size_t s = 0; s < sample_count; ++s) {
-                        samples16[s] = static_cast<int16_t>(samples16[s] * vol);
+
+                if (is_float_format_) {
+                    // Convert S16LE PCM to 32-bit Float for WASAPI shared mode
+                    auto* out_float = reinterpret_cast<float*>(buffer);
+                    auto* in_s16 = reinterpret_cast<const int16_t*>(pcm_chunk.data());
+                    size_t samples_to_convert = actual_bytes / sizeof(int16_t);
+                    size_t total_out_samples = frames_needed * mix_channels_;
+
+                    for (size_t s = 0; s < samples_to_convert && s < total_out_samples; ++s) {
+                        out_float[s] = (in_s16[s] / 32768.0f) * vol;
+                    }
+                    if (samples_to_convert < total_out_samples) {
+                        std::memset(out_float + samples_to_convert, 0, (total_out_samples - samples_to_convert) * sizeof(float));
+                    }
+                } else {
+                    std::memcpy(buffer, pcm_chunk.data(), actual_bytes);
+                    if (actual_bytes < input_bytes_needed) {
+                        std::memset(buffer + actual_bytes, 0, input_bytes_needed - actual_bytes);
+                    }
+                    if (vol < 0.999f && bits_per_sample_ == 16) {
+                        auto* samples16 = reinterpret_cast<int16_t*>(buffer);
+                        size_t sample_count = input_bytes_needed / sizeof(int16_t);
+                        for (size_t s = 0; s < sample_count; ++s) {
+                            samples16[s] = static_cast<int16_t>(samples16[s] * vol);
+                        }
                     }
                 }
 

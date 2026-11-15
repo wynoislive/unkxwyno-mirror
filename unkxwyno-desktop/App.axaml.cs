@@ -64,6 +64,7 @@ namespace Unkxwyno.Desktop
                 desktop.MainWindow = mainWindow;
                 desktop.Exit += (s, e) =>
                 {
+                    viewModel.Dispose();
                     engineService.Dispose();
                     adbService.Dispose();
                 };

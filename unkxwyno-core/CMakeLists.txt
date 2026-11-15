@@ -50,6 +50,7 @@ if (WIN32)
         mfuuid
         ole32
         avrt
+        bcrypt
     )
 endif()
 

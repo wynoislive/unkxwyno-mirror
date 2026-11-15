@@ -58,6 +58,10 @@ private:
     HANDLE device_handle_{INVALID_HANDLE_VALUE};
     WINUSB_INTERFACE_HANDLE winusb_handle_{nullptr};
     std::mutex io_mutex_;
+    std::mutex read_mutex_;
+    std::mutex write_mutex_;
+    HANDLE read_event_{nullptr};
+    HANDLE write_event_{nullptr};
 };
 
 class WinUsbTransport final : public IUsbTransport {

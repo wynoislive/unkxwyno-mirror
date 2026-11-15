@@ -19,7 +19,7 @@ namespace Unkxwyno.Desktop.Views
 {
     public partial class ViewportToolbarWindow : Window
     {
-        private readonly MirrorEngineService _engineService;
+        private readonly IMirrorEngineService _engineService;
         private readonly DispatcherTimer _syncTimer;
         private bool _isScreenOff = false;
         private bool _isHudVisible = true;
@@ -33,7 +33,7 @@ namespace Unkxwyno.Desktop.Views
             _syncTimer = null!;
         }
 
-        public ViewportToolbarWindow(MirrorEngineService engineService)
+        public ViewportToolbarWindow(IMirrorEngineService engineService)
         {
             InitializeComponent();
             _engineService = engineService;

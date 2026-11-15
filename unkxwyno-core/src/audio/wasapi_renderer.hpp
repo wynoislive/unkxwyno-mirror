@@ -49,6 +49,9 @@ private:
     uint16_t bits_per_sample_ = 16;
     uint32_t frame_size_bytes_ = 4;
     UINT32 buffer_frame_count_ = 0;
+    bool is_float_format_ = false;
+    uint16_t mix_channels_ = 2;
+    uint32_t mix_sample_rate_ = 48000;
 
     std::atomic<bool> is_running_{false};
     std::atomic<float> volume_{1.0f};

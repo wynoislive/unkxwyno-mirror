@@ -13,7 +13,7 @@ using Unkxwyno.Desktop.Interop;
 
 namespace Unkxwyno.Desktop.Services
 {
-    public class MirrorEngineService : IDisposable
+    public class MirrorEngineService : IMirrorEngineService
     {
         private IntPtr _engineHandle = IntPtr.Zero;
         private readonly System.Timers.Timer _metricsTimer;
@@ -156,6 +156,24 @@ namespace Unkxwyno.Desktop.Services
             {
                 UnkxwynoNative.unkxwyno_inject_key(_engineHandle, keyCode, isDown, modifiers);
             }
+        }
+
+        public void InjectMouse(short deltaX, short deltaY, sbyte wheelV = 0, sbyte wheelH = 0, byte buttons = 0)
+        {
+            if (_engineHandle != IntPtr.Zero)
+            {
+                UnkxwynoNative.unkxwyno_inject_mouse(_engineHandle, deltaX, deltaY, wheelV, wheelH, buttons);
+            }
+        }
+
+        public bool GetMetrics(out UnkxwynoMetrics metrics)
+        {
+            metrics = default;
+            if (_engineHandle != IntPtr.Zero)
+            {
+                return UnkxwynoNative.unkxwyno_get_metrics(_engineHandle, out metrics) == UnkxwynoStatus.Success;
+            }
+            return false;
         }
 
         private void PollMetrics()

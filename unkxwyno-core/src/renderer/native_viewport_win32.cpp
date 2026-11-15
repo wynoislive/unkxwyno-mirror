@@ -172,6 +172,7 @@ private:
         }
 
         hwnd_.store(nullptr);
+        is_open_.store(false);
     }
 
     static LRESULT CALLBACK StaticWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {

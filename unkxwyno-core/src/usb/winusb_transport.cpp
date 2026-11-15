@@ -25,6 +25,8 @@ WinUsbDeviceSession::WinUsbDeviceSession(UsbDeviceDescriptor desc,
     : descriptor_(std::move(desc)),
       device_handle_(device_handle),
       winusb_handle_(winusb_handle) {
+    read_event_ = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+    write_event_ = CreateEventW(nullptr, TRUE, FALSE, nullptr);
     if (winusb_handle_ != nullptr) {
         // Optimize pipe policies: Enable raw I/O and auto flush
         UCHAR raw_io = TRUE;
@@ -43,6 +45,9 @@ bool WinUsbDeviceSession::IsOpen() const {
 
 void WinUsbDeviceSession::Close() {
     std::lock_guard<std::mutex> lock(io_mutex_);
+    std::lock_guard<std::mutex> r_lock(read_mutex_);
+    std::lock_guard<std::mutex> w_lock(write_mutex_);
+
     if (winusb_handle_) {
         WinUsb_Free(winusb_handle_);
         winusb_handle_ = nullptr;
@@ -50,6 +55,14 @@ void WinUsbDeviceSession::Close() {
     if (device_handle_ != INVALID_HANDLE_VALUE) {
         CloseHandle(device_handle_);
         device_handle_ = INVALID_HANDLE_VALUE;
+    }
+    if (read_event_) {
+        CloseHandle(read_event_);
+        read_event_ = nullptr;
+    }
+    if (write_event_) {
+        CloseHandle(write_event_);
+        write_event_ = nullptr;
     }
 }
 
@@ -84,14 +97,15 @@ UsbStatus WinUsbDeviceSession::BulkRead(uint8_t endpoint_address,
                                        size_t& bytes_transferred,
                                        uint32_t timeout_ms) {
     bytes_transferred = 0;
-    if (!IsOpen()) return UsbStatus::ErrorNotFound;
+    std::lock_guard<std::mutex> lock(read_mutex_);
+    if (!IsOpen() || !read_event_) return UsbStatus::ErrorNotFound;
 
     ULONG to_read = static_cast<ULONG>(length);
     ULONG transferred = 0;
 
+    ResetEvent(read_event_);
     OVERLAPPED ov{};
-    ov.hEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
-    if (!ov.hEvent) return UsbStatus::ErrorIo;
+    ov.hEvent = read_event_;
 
     BOOL ok = WinUsb_ReadPipe(winusb_handle_, endpoint_address, buffer, to_read, &transferred, &ov);
     if (!ok) {
@@ -99,23 +113,21 @@ UsbStatus WinUsbDeviceSession::BulkRead(uint8_t endpoint_address,
         if (err == ERROR_IO_PENDING) {
             DWORD wait_res = WaitForSingleObject(ov.hEvent, timeout_ms);
             if (wait_res == WAIT_OBJECT_0) {
-                if (GetOverlappedResult(device_handle_, &ov, &transferred, FALSE)) {
+                if (WinUsb_GetOverlappedResult(winusb_handle_, &ov, &transferred, FALSE)) {
                     bytes_transferred = transferred;
-                    CloseHandle(ov.hEvent);
                     return UsbStatus::Success;
                 }
             } else if (wait_res == WAIT_TIMEOUT) {
                 CancelIoEx(device_handle_, &ov);
-                CloseHandle(ov.hEvent);
+                // Await asynchronous cancellation completion before proceeding
+                WinUsb_GetOverlappedResult(winusb_handle_, &ov, &transferred, TRUE);
                 return UsbStatus::ErrorTimeout;
             }
         }
-        CloseHandle(ov.hEvent);
         return UsbStatus::ErrorIo;
     }
 
     bytes_transferred = transferred;
-    CloseHandle(ov.hEvent);
     return UsbStatus::Success;
 }
 
@@ -125,14 +137,15 @@ UsbStatus WinUsbDeviceSession::BulkWrite(uint8_t endpoint_address,
                                         size_t& bytes_transferred,
                                         uint32_t timeout_ms) {
     bytes_transferred = 0;
-    if (!IsOpen()) return UsbStatus::ErrorNotFound;
+    std::lock_guard<std::mutex> lock(write_mutex_);
+    if (!IsOpen() || !write_event_) return UsbStatus::ErrorNotFound;
 
     ULONG to_write = static_cast<ULONG>(length);
     ULONG transferred = 0;
 
+    ResetEvent(write_event_);
     OVERLAPPED ov{};
-    ov.hEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
-    if (!ov.hEvent) return UsbStatus::ErrorIo;
+    ov.hEvent = write_event_;
 
     // Const cast is safe here because WinUsb_WritePipe does not modify outgoing buffers
     BOOL ok = WinUsb_WritePipe(winusb_handle_, endpoint_address, const_cast<PUCHAR>(data), to_write, &transferred, &ov);
@@ -141,23 +154,20 @@ UsbStatus WinUsbDeviceSession::BulkWrite(uint8_t endpoint_address,
         if (err == ERROR_IO_PENDING) {
             DWORD wait_res = WaitForSingleObject(ov.hEvent, timeout_ms);
             if (wait_res == WAIT_OBJECT_0) {
-                if (GetOverlappedResult(device_handle_, &ov, &transferred, FALSE)) {
+                if (WinUsb_GetOverlappedResult(winusb_handle_, &ov, &transferred, FALSE)) {
                     bytes_transferred = transferred;
-                    CloseHandle(ov.hEvent);
                     return UsbStatus::Success;
                 }
             } else {
                 CancelIoEx(device_handle_, &ov);
-                CloseHandle(ov.hEvent);
+                WinUsb_GetOverlappedResult(winusb_handle_, &ov, &transferred, TRUE);
                 return UsbStatus::ErrorTimeout;
             }
         }
-        CloseHandle(ov.hEvent);
         return UsbStatus::ErrorIo;
     }
 
     bytes_transferred = transferred;
-    CloseHandle(ov.hEvent);
     return UsbStatus::Success;
 }
 

@@ -19,10 +19,15 @@ using Unkxwyno.Desktop.Services;
 
 namespace Unkxwyno.Desktop.ViewModels
 {
-    public partial class MainViewModel : ObservableObject
+    public partial class MainViewModel : ObservableObject, IDisposable
     {
-        private readonly MirrorEngineService _engineService;
-        private readonly AdbDeviceService _adbService;
+        private readonly IMirrorEngineService _engineService;
+        private readonly IAdbDeviceService _adbService;
+        private bool _isDisposed;
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(ToggleStreamingCommand))]
+        private bool _isBusy;
 
         [ObservableProperty]
         private string _detectedDevicesCountText = "Scanning USB Ports...";
@@ -162,28 +167,15 @@ namespace Unkxwyno.Desktop.ViewModels
         public event Action? OnRequestShowToolbar;
         public event Action? OnRequestPickBlueStacksConfig;
 
-        public MainViewModel(MirrorEngineService engineService, AdbDeviceService adbService)
+        public MainViewModel(IMirrorEngineService engineService, IAdbDeviceService adbService)
         {
             _engineService = engineService;
             _adbService = adbService;
 
-            _adbService.OnDevicesUpdated += (devs) =>
-            {
-                if (devs.Count > 0)
-                {
-                    ConnectedDeviceModel = devs[0].Model;
-                    ConnectedDeviceManufacturer = "Android (ADB Cable Tunnel)";
-                    UsbConnectionStatus = $"{devs[0].Model} Ready to Mirror";
-                    DeviceBadgeText = $"{devs[0].Model} [WIRED]";
-                    DetectedDevicesCountText = $"{devs.Count} Android Device{(devs.Count > 1 ? "s" : "")} Connected";
-                    IsAdbDeviceDetected = true;
-                }
-                else
-                {
-                    DetectedDevicesCountText = "Connect Phone via USB Cable (USB Debugging enabled)";
-                    IsAdbDeviceDetected = false;
-                }
-            };
+            _adbService.OnDevicesUpdated += HandleAdbDevicesUpdated;
+            _engineService.OnDeviceStateChanged += HandleEngineDeviceStateChanged;
+            _engineService.OnMetricsUpdated += HandleEngineMetricsUpdated;
+            _engineService.OnLogReceived += HandleEngineLogReceived;
 
             // Auto-detect Preferred Local LAN IP address
             try
@@ -195,61 +187,90 @@ namespace Unkxwyno.Desktop.ViewModels
             {
                 Console.WriteLine($"[QR] Generation exception: {ex.Message}");
             }
+        }
 
-            _engineService.OnDeviceStateChanged += (dev, state) =>
+        private void HandleAdbDevicesUpdated(System.Collections.Generic.List<AdbDevice> devs)
+        {
+            if (devs.Count > 0)
             {
-                StatusText = state switch
-                {
-                    UnkxwynoDeviceState.Connected => $"Connected: {dev.ModelName} ({dev.Manufacturer})",
-                    UnkxwynoDeviceState.Streaming => $"Streaming: {dev.ModelName} (Ultra-Low Latency)",
-                    UnkxwynoDeviceState.Connecting => "Negotiating AOA 2.0 Accessory Handshake...",
-                    UnkxwynoDeviceState.Error => "USB Transmission Error",
-                    _ => "Ready - Connect phone via USB Cable, Wi-Fi, or AirPlay"
-                };
+                ConnectedDeviceModel = devs[0].Model;
+                ConnectedDeviceManufacturer = "Android (ADB Cable Tunnel)";
+                UsbConnectionStatus = $"{devs[0].Model} Ready to Mirror";
+                DeviceBadgeText = $"{devs[0].Model} [WIRED]";
+                DetectedDevicesCountText = $"{devs.Count} Android Device{(devs.Count > 1 ? "s" : "")} Connected";
+                IsAdbDeviceDetected = true;
+            }
+            else
+            {
+                DetectedDevicesCountText = "Connect Phone via USB Cable (USB Debugging enabled)";
+                IsAdbDeviceDetected = false;
+            }
+        }
 
-                ConnectedDeviceModel = state switch
-                {
-                    UnkxwynoDeviceState.Connected => dev.ModelName,
-                    UnkxwynoDeviceState.Streaming => dev.ModelName,
-                    _ => "Auto-Scanning USB Ports..."
-                };
-
-                ConnectedDeviceManufacturer = state switch
-                {
-                    UnkxwynoDeviceState.Connected => dev.Manufacturer,
-                    UnkxwynoDeviceState.Streaming => dev.Manufacturer,
-                    _ => "Android / Apple Device"
-                };
-
-                UsbConnectionStatus = state switch
-                {
-                    UnkxwynoDeviceState.Connected => "Device Attached & Authorized",
-                    UnkxwynoDeviceState.Streaming => "Streaming Active (Hardware D3D11)",
-                    _ => "AOA 2.0 Plug-and-Play Ready"
-                };
-
-                DeviceBadgeText = state switch
-                {
-                    UnkxwynoDeviceState.Connected => $"{dev.ModelName} [USB AOA]",
-                    UnkxwynoDeviceState.Streaming => $"{dev.ModelName} [LIVE]",
-                    _ => "Auto-Detecting Devices..."
-                };
+        private void HandleEngineDeviceStateChanged(UnkxwynoDeviceInfo dev, UnkxwynoDeviceState state)
+        {
+            StatusText = state switch
+            {
+                UnkxwynoDeviceState.Connected => $"Connected: {dev.ModelName} ({dev.Manufacturer})",
+                UnkxwynoDeviceState.Streaming => $"Streaming: {dev.ModelName} (Ultra-Low Latency)",
+                UnkxwynoDeviceState.Connecting => "Negotiating AOA 2.0 Accessory Handshake...",
+                UnkxwynoDeviceState.Error => "USB Transmission Error",
+                _ => "Ready - Connect phone via USB Cable, Wi-Fi, or AirPlay"
             };
 
-            _engineService.OnMetricsUpdated += (metrics) =>
+            ConnectedDeviceModel = state switch
             {
-                FpsText = $"{metrics.CurrentFps:F1} FPS";
-                BitrateText = $"{(metrics.BitrateBps / 1_000_000.0f):F1} Mbps";
-                DecodeLatencyText = $"{metrics.DecodeLatencyMs:F1} ms";
-                RenderLatencyText = $"{metrics.RenderLatencyMs:F1} ms";
-                AudioBufferText = $"{metrics.AudioBufferMs:F1} ms";
-                FramesRenderedText = $"{metrics.TotalFramesRendered:N0} frames";
+                UnkxwynoDeviceState.Connected => dev.ModelName,
+                UnkxwynoDeviceState.Streaming => dev.ModelName,
+                _ => "Auto-Scanning USB Ports..."
             };
 
-            _engineService.OnLogReceived += (level, msg) =>
+            ConnectedDeviceManufacturer = state switch
             {
-                Console.WriteLine($"[Core {level}] {msg}");
+                UnkxwynoDeviceState.Connected => dev.Manufacturer,
+                UnkxwynoDeviceState.Streaming => dev.Manufacturer,
+                _ => "Android / Apple Device"
             };
+
+            UsbConnectionStatus = state switch
+            {
+                UnkxwynoDeviceState.Connected => "Device Attached & Authorized",
+                UnkxwynoDeviceState.Streaming => "Streaming Active (Hardware D3D11)",
+                _ => "AOA 2.0 Plug-and-Play Ready"
+            };
+
+            DeviceBadgeText = state switch
+            {
+                UnkxwynoDeviceState.Connected => $"{dev.ModelName} [USB AOA]",
+                UnkxwynoDeviceState.Streaming => $"{dev.ModelName} [LIVE]",
+                _ => "Auto-Detecting Devices..."
+            };
+        }
+
+        private void HandleEngineMetricsUpdated(UnkxwynoMetrics metrics)
+        {
+            FpsText = $"{metrics.CurrentFps:F1} FPS";
+            BitrateText = $"{(metrics.BitrateBps / 1_000_000.0f):F1} Mbps";
+            DecodeLatencyText = $"{metrics.DecodeLatencyMs:F1} ms";
+            RenderLatencyText = $"{metrics.RenderLatencyMs:F1} ms";
+            AudioBufferText = $"{metrics.AudioBufferMs:F1} ms";
+            FramesRenderedText = $"{metrics.TotalFramesRendered:N0} frames";
+        }
+
+        private void HandleEngineLogReceived(UnkxwynoLogLevel level, string msg)
+        {
+            Console.WriteLine($"[Core {level}] {msg}");
+        }
+
+        public void Dispose()
+        {
+            if (_isDisposed) return;
+            _isDisposed = true;
+
+            _adbService.OnDevicesUpdated -= HandleAdbDevicesUpdated;
+            _engineService.OnDeviceStateChanged -= HandleEngineDeviceStateChanged;
+            _engineService.OnMetricsUpdated -= HandleEngineMetricsUpdated;
+            _engineService.OnLogReceived -= HandleEngineLogReceived;
         }
 
         [RelayCommand]
@@ -296,56 +317,67 @@ namespace Unkxwyno.Desktop.ViewModels
             _engineService.SetScreenPower(!IsScreenOff);
         }
 
-        [RelayCommand]
+        private bool CanToggleStreaming() => !IsBusy;
+
+        [RelayCommand(CanExecute = nameof(CanToggleStreaming))]
         public void ToggleStreaming()
         {
-            if (IsStreaming)
+            if (IsBusy) return;
+            try
             {
-                _engineService.Stop();
-                _engineService.ShowViewport(false);
-                IsStreaming = false;
-                StreamingBtnText = "START ULTRA-FAST MIRRORING";
-                StatusText = "Streaming Stopped.";
-            }
-            else
-            {
-                var cfg = UnkxwynoConfig.Default;
-                cfg.TargetFps = SelectedFps;
-                cfg.BitrateBps = SelectedBitrateMbps * 1_000_000;
-                cfg.EnableAudio = (byte)(IsAudioEnabled ? 1 : 0);
-                cfg.EnableTouchInput = (byte)(IsTouchInputEnabled ? 1 : 0);
-
-                if (_engineService.Initialize(cfg))
+                IsBusy = true;
+                if (IsStreaming)
                 {
-                    // Automatically configure bidirectional ADB port tunnel for plugged-in Android phones
-                    if (_adbService.ConnectedDevices.Count > 0)
-                    {
-                        var dev = _adbService.ConnectedDevices[0];
-                        _ = _adbService.SetupPortForwardingAsync(dev.Serial, StreamPort);
-                        StatusText = $"Tunneling USB Cable to {dev.Model} (Port {StreamPort})...";
-                    }
-
-                    _engineService.CreateViewport("unkXwyno Mirror - Low Latency Display", 1920, 1080);
-                    _engineService.ShowViewport(true);
-                    _engineService.Start();
-                    IsStreaming = true;
-                    StreamingBtnText = "STOP ACTIVE STREAM";
-                    StatusText = "Engine Active - Mirroring Display";
-
-                    // Apply in-shader keymap badges if enabled
-                    if (IsKeymapHudEnabled)
-                    {
-                        var profile = KeymapProfile.CreateDefaultFpsProfile();
-                        var badges = BlueStacksConfigParser.ToNativeBadges(profile);
-                        _engineService.SetKeymapHud(true, badges);
-                    }
-
-                    OnRequestShowToolbar?.Invoke();
+                    _engineService.Stop();
+                    _engineService.ShowViewport(false);
+                    IsStreaming = false;
+                    StreamingBtnText = "START ULTRA-FAST MIRRORING";
+                    StatusText = "Streaming Stopped.";
                 }
                 else
                 {
-                    StatusText = "Failed to initialize native core engine.";
+                    var cfg = UnkxwynoConfig.Default;
+                    cfg.TargetFps = SelectedFps;
+                    cfg.BitrateBps = SelectedBitrateMbps * 1_000_000;
+                    cfg.EnableAudio = (byte)(IsAudioEnabled ? 1 : 0);
+                    cfg.EnableTouchInput = (byte)(IsTouchInputEnabled ? 1 : 0);
+
+                    if (_engineService.Initialize(cfg))
+                    {
+                        // Automatically configure bidirectional ADB port tunnel for plugged-in Android phones
+                        if (_adbService.ConnectedDevices.Count > 0)
+                        {
+                            var dev = _adbService.ConnectedDevices[0];
+                            _ = _adbService.SetupPortForwardingAsync(dev.Serial, StreamPort);
+                            StatusText = $"Tunneling USB Cable to {dev.Model} (Port {StreamPort})...";
+                        }
+
+                        _engineService.CreateViewport("unkXwyno Mirror - Low Latency Display", 1920, 1080);
+                        _engineService.ShowViewport(true);
+                        _engineService.Start();
+                        IsStreaming = true;
+                        StreamingBtnText = "STOP ACTIVE STREAM";
+                        StatusText = "Engine Active - Mirroring Display";
+
+                        // Apply in-shader keymap badges if enabled
+                        if (IsKeymapHudEnabled)
+                        {
+                            var profile = KeymapProfile.CreateDefaultFpsProfile();
+                            var badges = BlueStacksConfigParser.ToNativeBadges(profile);
+                            _engineService.SetKeymapHud(true, badges);
+                        }
+
+                        OnRequestShowToolbar?.Invoke();
+                    }
+                    else
+                    {
+                        StatusText = "Failed to initialize native core engine.";
+                    }
                 }
+            }
+            finally
+            {
+                IsBusy = false;
             }
         }
 

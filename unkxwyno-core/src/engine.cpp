@@ -190,11 +190,7 @@ unkxwyno_status_t Engine::ViewportCreate(const char* title, int width, int heigh
     int w = width > 0 ? width : 1920;
     int h = height > 0 ? height : 1080;
 
-    if (!viewport_->Create(win_title, w, h)) {
-        return UNKXWYNO_ERR_RENDERER_INIT;
-    }
-
-    // Connect viewport touch & key callbacks to engine injection
+    // Connect viewport touch & key callbacks BEFORE window message loop starts
     viewport_->SetTouchCallback([this](uint8_t ptr, uint8_t act, uint16_t x, uint16_t y, uint16_t prs) {
         InjectTouch(ptr, act, x, y, prs);
     });
@@ -203,17 +199,21 @@ unkxwyno_status_t Engine::ViewportCreate(const char* title, int width, int heigh
         InjectKey(key, is_down, mod);
     });
 
-    // Initialize renderer swapchain with native window handle
-    void* hwnd = viewport_->GetNativeHandle();
-    if (video_renderer_) {
-        video_renderer_->Initialize(hwnd, w, h);
-    }
-
     viewport_->SetResizeCallback([this](int new_w, int new_h) {
         if (video_renderer_) {
             video_renderer_->Resize(new_w, new_h);
         }
     });
+
+    if (!viewport_->Create(win_title, w, h)) {
+        return UNKXWYNO_ERR_RENDERER_INIT;
+    }
+
+    // Initialize renderer swapchain with native window handle
+    void* hwnd = viewport_->GetNativeHandle();
+    if (video_renderer_) {
+        video_renderer_->Initialize(hwnd, w, h);
+    }
 
     return UNKXWYNO_SUCCESS;
 }
@@ -285,6 +285,7 @@ unkxwyno_status_t Engine::SetScreenPower(bool power_on) {
 }
 
 unkxwyno_status_t Engine::InjectTouch(uint8_t pointer_id, uint8_t action, uint16_t x, uint16_t y, uint16_t pressure) {
+    std::lock_guard<std::mutex> lock(engine_mutex_);
     if (!aoa_client_) return UNKXWYNO_ERR_NOT_RUNNING;
     unkxwyno_touch_event_t evt{};
     evt.pointer_id = pointer_id;
@@ -317,16 +318,27 @@ void Engine::StreamingLoop() {
         }
 
         // 1. If no active device, scan USB devices
-        if (!active_usb_session_ && usb_transport_) {
+        bool needs_scan = false;
+        {
+            std::lock_guard<std::mutex> lock(engine_mutex_);
+            needs_scan = (!active_usb_session_ && usb_transport_);
+        }
+
+        if (needs_scan) {
             auto devices = usb_transport_->EnumerateDevices();
             for (const auto& dev : devices) {
                 if (dev.is_android_aoa) {
                     Log(UNKXWYNO_LOG_INFO, "Discovered Android AOA Device: " + dev.device_path);
-                    active_usb_session_ = usb_transport_->OpenDevice(dev.device_path);
-                    if (active_usb_session_) {
-                        aoa_client_ = std::make_unique<protocol::Aoa2Client>(active_usb_session_);
-                        if (aoa_client_->RegisterHidTouchscreen(1)) {
+                    auto session = usb_transport_->OpenDevice(dev.device_path);
+                    if (session) {
+                        auto client = std::make_unique<protocol::Aoa2Client>(session);
+                        if (client->RegisterHidTouchscreen(1)) {
                             Log(UNKXWYNO_LOG_INFO, "AOAv2 HID Multi-touch digitizer active.");
+                        }
+                        {
+                            std::lock_guard<std::mutex> lock(engine_mutex_);
+                            active_usb_session_ = std::move(session);
+                            aoa_client_ = std::move(client);
                         }
                         break;
                     }
@@ -335,12 +347,23 @@ void Engine::StreamingLoop() {
         }
 
         // 2. Read bulk stream data if connected
-        if (aoa_client_) {
+        bool has_client = false;
+        {
+            std::lock_guard<std::mutex> lock(engine_mutex_);
+            has_client = (aoa_client_ != nullptr);
+        }
+
+        if (has_client) {
             size_t bytes_read = 0;
-            if (aoa_client_->ReadStream(read_buffer.data(), read_buffer.size(), bytes_read, 50)) {
-                if (bytes_read > 0) {
-                    demuxer_.PushData(std::span<const uint8_t>(read_buffer.data(), bytes_read));
+            bool read_ok = false;
+            {
+                std::lock_guard<std::mutex> lock(engine_mutex_);
+                if (aoa_client_) {
+                    read_ok = aoa_client_->ReadStream(read_buffer.data(), read_buffer.size(), bytes_read, 50);
                 }
+            }
+            if (read_ok && bytes_read > 0) {
+                demuxer_.PushData(std::span<const uint8_t>(read_buffer.data(), bytes_read));
             }
         } else {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));

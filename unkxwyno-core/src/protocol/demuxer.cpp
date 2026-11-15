@@ -29,6 +29,14 @@ void ProtocolDemuxer::PushData(std::span<const uint8_t> incoming_chunk) {
     if (incoming_chunk.empty()) return;
 
     total_bytes_ += incoming_chunk.size();
+
+    // Security Guard: Prevent memory exhaustion if corrupt packets claim huge lengths
+    constexpr size_t MAX_ACCUMULATOR_LIMIT = 32 * 1024 * 1024;
+    if (accumulator_.size() + incoming_chunk.size() > MAX_ACCUMULATOR_LIMIT) {
+        accumulator_.clear();
+        has_first_sequence_ = false;
+    }
+
     accumulator_.insert(accumulator_.end(), incoming_chunk.begin(), incoming_chunk.end());
 
     size_t processed_offset = 0;

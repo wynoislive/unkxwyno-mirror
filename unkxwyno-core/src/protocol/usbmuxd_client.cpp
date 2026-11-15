@@ -174,10 +174,23 @@ intptr_t UsbmuxdClient::ConnectToPort(uint32_t device_id, uint16_t target_port) 
     UsbmuxdHeader res_hdr{};
     int received = recv(s, reinterpret_cast<char*>(&res_hdr), sizeof(res_hdr), 0);
     if (received >= static_cast<int>(sizeof(res_hdr))) {
-        // Connected! The socket handle is now a direct tunnel to iOS AirPlay!
-        intptr_t tunnel = socket_handle_;
-        socket_handle_ = -1; // Detach socket so caller owns the tunnel
-        return tunnel;
+        if (res_hdr.length > sizeof(UsbmuxdHeader)) {
+            size_t payload_len = res_hdr.length - sizeof(UsbmuxdHeader);
+            std::vector<char> payload(payload_len + 1, 0);
+            int pl_recvd = recv(s, payload.data(), static_cast<int>(payload_len), 0);
+            if (pl_recvd > 0) {
+                std::string resp(payload.data(), pl_recvd);
+                if (resp.find("<integer>0</integer>") != std::string::npos) {
+                    intptr_t tunnel = socket_handle_;
+                    socket_handle_ = -1; // Detach socket so caller owns the tunnel
+                    return tunnel;
+                }
+            }
+        } else {
+            intptr_t tunnel = socket_handle_;
+            socket_handle_ = -1;
+            return tunnel;
+        }
     }
 #endif
 
