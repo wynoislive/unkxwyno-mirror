@@ -1,0 +1,22 @@
+# Binaries & Build Artifacts
+bin/
+obj/
+build/
+*.o
+*.obj
+*.dll
+*.exe
+*.so
+*.dylib
+*.pdb
+
+# Gradle & Android
+.gradle/
+local.properties
+.idea/
+*.apk
+*.aab
+
+# OS files
+.DS_Store
+Thumbs.db

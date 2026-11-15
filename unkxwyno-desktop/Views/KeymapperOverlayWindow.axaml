@@ -1,0 +1,74 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Unkxwyno.Desktop.Views.KeymapperOverlayWindow"
+        Title="unkXwyno Mobile Game Keymapper Overlay"
+        Width="1280" Height="720"
+        WindowStartupLocation="CenterScreen"
+        Background="#55000000"
+        Topmost="True">
+
+    <Grid>
+        <!-- Overlay Canvas with Key Pins -->
+        <Canvas x:Name="KeymapCanvas" Background="Transparent" PointerPressed="OnCanvasPointerPressed">
+            
+            <!-- WASD D-Pad Indicator -->
+            <Border Canvas.Left="150" Canvas.Top="450" Width="140" Height="140" CornerRadius="70"
+                    BorderBrush="#00E5FF" BorderThickness="2" Background="#2200E5FF">
+                <Grid>
+                    <TextBlock Text="W" FontWeight="Bold" Foreground="#00E5FF" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,10,0,0" />
+                    <TextBlock Text="S" FontWeight="Bold" Foreground="#00E5FF" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" />
+                    <TextBlock Text="A" FontWeight="Bold" Foreground="#00E5FF" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0" />
+                    <TextBlock Text="D" FontWeight="Bold" Foreground="#00E5FF" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" />
+                    <TextBlock Text="D-PAD" FontSize="11" Foreground="#8B949E" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Grid>
+            </Border>
+
+            <!-- Fire Button Pin -->
+            <Border Canvas.Left="1050" Canvas.Top="380" Width="70" Height="70" CornerRadius="35"
+                    BorderBrush="#FF5252" BorderThickness="2" Background="#22FF5252">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="L-CLICK" FontWeight="Bold" FontSize="11" Foreground="#FF5252" HorizontalAlignment="Center" />
+                    <TextBlock Text="FIRE" FontWeight="Bold" FontSize="13" Foreground="#FFFFFF" HorizontalAlignment="Center" />
+                </StackPanel>
+            </Border>
+
+            <!-- Aim / Scope Pin -->
+            <Border Canvas.Left="1120" Canvas.Top="280" Width="60" Height="60" CornerRadius="30"
+                    BorderBrush="#7C4DFF" BorderThickness="2" Background="#227C4DFF">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="R-CLICK" FontWeight="Bold" FontSize="10" Foreground="#7C4DFF" HorizontalAlignment="Center" />
+                    <TextBlock Text="SCOPE" FontWeight="Bold" FontSize="11" Foreground="#FFFFFF" HorizontalAlignment="Center" />
+                </StackPanel>
+            </Border>
+
+            <!-- Jump Pin (Space) -->
+            <Border Canvas.Left="1120" Canvas.Top="480" Width="60" Height="60" CornerRadius="30"
+                    BorderBrush="#00E676" BorderThickness="2" Background="#2200E676">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="SPACE" FontWeight="Bold" FontSize="11" Foreground="#00E676" HorizontalAlignment="Center" />
+                    <TextBlock Text="JUMP" FontSize="10" Foreground="#FFFFFF" HorizontalAlignment="Center" />
+                </StackPanel>
+            </Border>
+
+            <!-- Reload Pin (R) -->
+            <Border Canvas.Left="980" Canvas.Top="480" Width="50" Height="50" CornerRadius="25"
+                    BorderBrush="#FFD600" BorderThickness="2" Background="#22FFD600">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="R" FontWeight="Bold" FontSize="14" Foreground="#FFD600" HorizontalAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </Canvas>
+
+        <!-- Top Status Bar HUD -->
+        <Border VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,20,0,0"
+                Background="#161B22DD" CornerRadius="12" BorderBrush="#00E5FF44" BorderThickness="1"
+                Padding="16,8">
+            <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+                <TextBlock Text="🎮 Mobile Game Keymapper Active" FontWeight="Bold" Foreground="#00E5FF" VerticalAlignment="Center" />
+                <TextBlock Text="|  Profile: Battle Royale Standard" Foreground="#8B949E" VerticalAlignment="Center" />
+                <Button Content="Close Overlay" CornerRadius="6" Background="#21262D" Foreground="#F0F6FC"
+                        Click="OnCloseOverlayClick" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

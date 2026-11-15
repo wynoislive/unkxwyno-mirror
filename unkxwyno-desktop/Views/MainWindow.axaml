@@ -1,0 +1,161 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Unkxwyno.Desktop.ViewModels"
+        x:Class="Unkxwyno.Desktop.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="unkXwyno Mirror Control Dock"
+        Width="460" Height="620"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        SystemDecorations="None"
+        Background="Transparent"
+        TransparencyLevelHint="Mica,AcrylicBlur">
+
+    <Border Background="#161B22EE"
+            CornerRadius="16"
+            BorderBrush="#00E5FF44"
+            BorderThickness="1.5"
+            BoxShadow="0 8 32 #88000000"
+            Padding="20">
+        <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+            
+            <!-- Top Drag Handle & Title Bar -->
+            <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,16" PointerPressed="OnDragWindow">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Border Width="12" Height="12" CornerRadius="6" Background="{StaticResource BrandPrimaryBrush}" />
+                    <TextBlock Text="unkXwyno" FontWeight="Bold" FontSize="18" Foreground="{StaticResource BrandPrimaryBrush}" />
+                    <TextBlock Text="Mirror" FontWeight="SemiBold" FontSize="18" Foreground="#F0F6FC" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                    <Button Width="28" Height="28" CornerRadius="14" Background="#21262D" Foreground="#8B949E"
+                            Content="─" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                            Padding="0" Click="OnMinimizeClick" />
+                    <Button Width="28" Height="28" CornerRadius="14" Background="#FF525233" Foreground="#FF5252"
+                            Content="✕" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                            Padding="0" Click="OnCloseClick" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Status Pill Card -->
+            <Border Grid.Row="1" Background="#0D1117" CornerRadius="12" Padding="14" Margin="0,0,0,16"
+                    BorderBrush="#30363D" BorderThickness="1">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Text="CONNECTION STATUS" FontSize="11" FontWeight="Bold" Foreground="#8B949E" />
+                        <TextBlock Text="{Binding StatusText}" FontWeight="SemiBold" FontSize="14" Foreground="#F0F6FC" />
+                    </StackPanel>
+                    <Border Grid.Column="1" Width="12" Height="12" CornerRadius="6"
+                            Background="{StaticResource StatusGreenBrush}" VerticalAlignment="Center" />
+                </Grid>
+            </Border>
+
+            <!-- Real-Time Telemetry HUD Grid -->
+            <Grid Grid.Row="2" ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" Margin="0,0,0,16">
+                <!-- Framerate -->
+                <Border Grid.Row="0" Grid.Column="0" Background="#21262D" CornerRadius="8" Padding="12" Margin="0,0,4,4">
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="RENDER FRAMERATE" FontSize="10" Foreground="#8B949E" FontWeight="Bold" />
+                        <TextBlock Text="{Binding FpsText}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource BrandPrimaryBrush}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Bitrate -->
+                <Border Grid.Row="0" Grid.Column="1" Background="#21262D" CornerRadius="8" Padding="12" Margin="4,0,0,4">
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="VIDEO BITRATE" FontSize="10" Foreground="#8B949E" FontWeight="Bold" />
+                        <TextBlock Text="{Binding BitrateText}" FontSize="18" FontWeight="Bold" Foreground="#7C4DFF" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Hardware Decode Latency -->
+                <Border Grid.Row="1" Grid.Column="0" Background="#21262D" CornerRadius="8" Padding="12" Margin="0,4,4,0">
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="HARDWARE DECODE" FontSize="10" Foreground="#8B949E" FontWeight="Bold" />
+                        <TextBlock Text="{Binding DecodeLatencyText}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource StatusGreenBrush}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Audio Buffer Jitter -->
+                <Border Grid.Row="1" Grid.Column="1" Background="#21262D" CornerRadius="8" Padding="12" Margin="4,4,0,0">
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="AUDIO WASAPI BUFFER" FontSize="10" Foreground="#8B949E" FontWeight="Bold" />
+                        <TextBlock Text="{Binding AudioBufferText}" FontSize="18" FontWeight="Bold" Foreground="#FFD600" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Controls & Options Area -->
+            <StackPanel Grid.Row="3" Spacing="14" Margin="0,0,0,16">
+                <TextBlock Text="STREAMING SETTINGS" FontSize="11" FontWeight="Bold" Foreground="#8B949E" />
+
+                <!-- Target Framerate Radio Buttons -->
+                <Grid ColumnDefinitions="Auto,*">
+                    <TextBlock Grid.Column="0" Text="Target FPS" VerticalAlignment="Center" Foreground="#F0F6FC" FontSize="13" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="6">
+                        <RadioButton Content="60" GroupName="FpsGroup" IsChecked="True" Foreground="#F0F6FC" />
+                        <RadioButton Content="90" GroupName="FpsGroup" Foreground="#F0F6FC" />
+                        <RadioButton Content="120" GroupName="FpsGroup" Foreground="#F0F6FC" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- Bitrate Slider -->
+                <StackPanel Spacing="4">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Text="Max Bitrate (Mbps)" Foreground="#F0F6FC" FontSize="13" />
+                        <TextBlock Grid.Column="1" Text="{Binding SelectedBitrateMbps, StringFormat='{}{0} Mbps'}" Foreground="{StaticResource BrandPrimaryBrush}" FontWeight="SemiBold" />
+                    </Grid>
+                    <Slider Minimum="10" Maximum="60" Value="{Binding SelectedBitrateMbps}" />
+                </StackPanel>
+
+                <!-- Toggles -->
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0" Text="Internal Audio (48kHz WASAPI)" VerticalAlignment="Center" Foreground="#F0F6FC" FontSize="13" />
+                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding IsAudioEnabled}" OnContent="" OffContent="" />
+                </Grid>
+
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0" Text="Hardware Multi-Touch Backchannel" VerticalAlignment="Center" Foreground="#F0F6FC" FontSize="13" />
+                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding IsTouchInputEnabled}" OnContent="" OffContent="" />
+                </Grid>
+            </StackPanel>
+
+            <!-- Bottom Action Buttons -->
+            <StackPanel Grid.Row="4" Spacing="10">
+                <Grid ColumnDefinitions="*,*">
+                    <Button Grid.Column="0" Margin="0,0,4,0" Background="#21262D" Foreground="#F0F6FC"
+                            Height="40" CornerRadius="8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            Command="{Binding OpenKeymapperCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="🎮" />
+                            <TextBlock Text="Keymapper" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Column="1" Margin="4,0,0,0" Background="#21262D" Foreground="#F0F6FC"
+                            Height="40" CornerRadius="8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            Command="{Binding ToggleFullscreenCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="⛶" />
+                            <TextBlock Text="Fullscreen" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <!-- Start/Stop Streaming Master Button -->
+                <Button Height="48" CornerRadius="12" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        Command="{Binding ToggleStreamingCommand}"
+                        Background="{Binding IsStreaming, Converter={x:Null}}">
+                    <Button.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="Background" Value="{StaticResource BrandPrimaryBrush}" />
+                            <Setter Property="Foreground" Value="#000000" />
+                        </Style>
+                    </Button.Styles>
+                    <TextBlock Text="START ULTRA-FAST MIRRORING" FontWeight="Bold" FontSize="15" />
+                </Button>
+            </StackPanel>
+
+        </Grid>
+    </Border>
+</Window>

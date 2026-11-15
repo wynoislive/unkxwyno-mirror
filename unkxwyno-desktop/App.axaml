@@ -1,0 +1,25 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Unkxwyno.Desktop.App"
+             RequestedThemeVariant="Dark">
+    <Application.Styles>
+        <FluentTheme />
+    </Application.Styles>
+
+    <Application.Resources>
+        <!-- unkXwyno Brand Colors -->
+        <Color x:Key="BrandPrimary">#00E5FF</Color>
+        <Color x:Key="BrandSecondary">#7C4DFF</Color>
+        <Color x:Key="BgDark">#0D1117</Color>
+        <Color x:Key="SurfaceDark">#161B22</Color>
+        <Color x:Key="TextPrimary">#F0F6FC</Color>
+        <Color x:Key="TextSecondary">#8B949E</Color>
+        <Color x:Key="StatusGreen">#00E676</Color>
+
+        <SolidColorBrush x:Key="BrandPrimaryBrush" Color="{StaticResource BrandPrimary}" />
+        <SolidColorBrush x:Key="BrandSecondaryBrush" Color="{StaticResource BrandSecondary}" />
+        <SolidColorBrush x:Key="BgDarkBrush" Color="{StaticResource BgDark}" />
+        <SolidColorBrush x:Key="SurfaceDarkBrush" Color="{StaticResource SurfaceDark}" />
+        <SolidColorBrush x:Key="StatusGreenBrush" Color="{StaticResource StatusGreen}" />
+    </Application.Resources>
+</Application>

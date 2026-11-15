@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">unkXwyno Mirror</string>
+    <string name="service_name">unkXwyno Low-Latency Mirroring Service</string>
+    <string name="notification_title">unkXwyno Mirror Active</string>
+    <string name="notification_desc">Screen and internal audio streaming over USB AOA 2.0</string>
+    <string name="btn_start_mirroring">Start Ultra-Fast Mirroring</string>
+    <string name="btn_stop_mirroring">Stop Mirroring</string>
+    <string name="status_disconnected">USB Disconnected. Plug into PC host.</string>
+    <string name="status_connected">Connected to unkXwyno PC Host via AOA 2.0</string>
+    <string name="status_streaming">Streaming 1080p @ 60 FPS (Hardware Encoded)</string>
+</resources>
