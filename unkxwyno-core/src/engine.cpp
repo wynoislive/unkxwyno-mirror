@@ -15,6 +15,7 @@
 #endif
 #include <iostream>
 #include <chrono>
+#include <cstring>
 
 namespace unkxwyno {
 
@@ -99,9 +100,33 @@ unkxwyno_status_t Engine::Start() {
         video_decoder_->Initialize(w, h, UNKXWYNO_CODEC_H264);
     }
 
+    // Start AirPlay Zero-Dependency Server (Port 7000 + mDNS discovery + usbmuxd tunnel)
+    airplay_server_ = std::make_unique<protocol::AirPlayServer>();
+    airplay_server_->SetVideoCallback([this](std::span<const uint8_t> nalu, uint64_t pts) {
+        if (video_decoder_) {
+            video_decoder_->DecodeNalu(nalu, pts);
+        }
+    });
+    airplay_server_->SetAudioCallback([this](std::span<const uint8_t> pcm) {
+        if (audio_renderer_) {
+            audio_renderer_->EnqueuePcm(pcm);
+        }
+    });
+    airplay_server_->Start(7000);
+
+    // Start Wireless TCP Server (Port 8099 + UDP Discovery Beacon on Port 8098)
+    tcp_server_ = std::make_unique<network::TcpServer>();
+    tcp_server_->SetDataCallback([this](std::span<const uint8_t> data) {
+        demuxer_.PushData(data);
+    });
+    tcp_server_->SetClientStateCallback([this](bool connected, const std::string& ip) {
+        Log(UNKXWYNO_LOG_INFO, connected ? ("Wireless Android device connected: " + ip) : ("Wireless Android device disconnected: " + ip));
+    });
+    tcp_server_->Start(8099, 8098);
+
     is_running_ = true;
     streaming_thread_ = std::thread(&Engine::StreamingLoop, this);
-    Log(UNKXWYNO_LOG_INFO, "unkXwyno Mirror Core Engine started.");
+    Log(UNKXWYNO_LOG_INFO, "unkXwyno Mirror Core Engine started (USB AOA + AirPlay + Wireless TCP active).");
     return UNKXWYNO_SUCCESS;
 }
 
@@ -114,6 +139,16 @@ unkxwyno_status_t Engine::Stop() {
 
     if (streaming_thread_.joinable()) {
         streaming_thread_.join();
+    }
+
+    if (airplay_server_) {
+        airplay_server_->Stop();
+        airplay_server_.reset();
+    }
+
+    if (tcp_server_) {
+        tcp_server_->Stop();
+        tcp_server_.reset();
     }
 
     if (usb_transport_) {
@@ -201,6 +236,52 @@ void* Engine::ViewportGetNativeHandle() {
     std::lock_guard<std::mutex> lock(engine_mutex_);
     if (!viewport_) return nullptr;
     return viewport_->GetNativeHandle();
+}
+
+unkxwyno_status_t Engine::ViewportGetBounds(int* out_x, int* out_y, int* out_width, int* out_height) {
+    std::lock_guard<std::mutex> lock(engine_mutex_);
+    if (!viewport_) return UNKXWYNO_ERR_NOT_RUNNING;
+    if (!out_x || !out_y || !out_width || !out_height) return UNKXWYNO_ERR_INVALID_PARAM;
+    viewport_->GetWindowBounds(*out_x, *out_y, *out_width, *out_height);
+    return UNKXWYNO_SUCCESS;
+}
+
+unkxwyno_status_t Engine::SetKeymapHud(bool visible, const unkxwyno_keymap_badge_t* badges, size_t count) {
+    std::lock_guard<std::mutex> lock(engine_mutex_);
+    if (!video_renderer_) return UNKXWYNO_ERR_RENDERER_INIT;
+    video_renderer_->SetHudVisible(visible);
+    if (badges && count > 0) {
+        static_assert(sizeof(unkxwyno_keymap_badge_t) == sizeof(renderer::KeymapBadge), "Badge layout mismatch");
+        video_renderer_->SetKeymapBadges(reinterpret_cast<const renderer::KeymapBadge*>(badges), count);
+    }
+    return UNKXWYNO_SUCCESS;
+}
+
+unkxwyno_status_t Engine::SetScreenPower(bool power_on) {
+    std::lock_guard<std::mutex> lock(engine_mutex_);
+    uint8_t payload[1] = { static_cast<uint8_t>(power_on ? 1 : 0) };
+    
+    // Construct UNKXWYNO 8-byte framing header
+    unkxwyno_packet_header_t hdr{};
+    hdr.body_len = sizeof(payload);
+    hdr.channel_id = UNKXWYNO_CHANNEL_CONTROL;
+    hdr.packet_type = UNKXWYNO_CTRL_SET_SCREEN_POWER;
+    hdr.sequence = 0;
+    hdr.reserved = 0;
+
+    bool sent = false;
+    if (aoa_client_) {
+        sent = aoa_client_->SendPacket(hdr, std::span<const uint8_t>(payload, sizeof(payload)));
+    }
+    if (tcp_server_ && tcp_server_->IsClientConnected()) {
+        uint8_t wire_packet[sizeof(hdr) + sizeof(payload)];
+        std::memcpy(wire_packet, &hdr, sizeof(hdr));
+        std::memcpy(wire_packet + sizeof(hdr), payload, sizeof(payload));
+        sent = tcp_server_->SendPacket(std::span<const uint8_t>(wire_packet, sizeof(wire_packet))) || sent;
+    }
+
+    Log(UNKXWYNO_LOG_INFO, std::string("SetScreenPower: ") + (power_on ? "ON" : "OFF (OLED Pure-Black Keep-Alive)") + (sent ? " [SENT]" : " [NO CLIENT]"));
+    return sent ? UNKXWYNO_SUCCESS : UNKXWYNO_ERR_CONNECTION_FAILED;
 }
 
 unkxwyno_status_t Engine::InjectTouch(uint8_t pointer_id, uint8_t action, uint16_t x, uint16_t y, uint16_t pressure) {

@@ -1,6 +1,6 @@
 /**
  * @file native_viewport_win32.cpp
- * @brief Win32 native borderless viewport window implementation.
+ * @brief Dedicated High-Priority Win32 Thread Native Borderless Viewport Window.
  * @version 1.0.0
  * 
  * Copyright (c) 2026 unkXwyno. Open source under the MIT License.
@@ -15,97 +15,89 @@
 #endif
 #include <windows.h>
 #include <windowsx.h>
+#include <thread>
+#include <atomic>
+#include <future>
 #include <iostream>
 
 namespace unkxwyno::renderer {
 
+#define WM_USER_SHOW       (WM_USER + 101)
+#define WM_USER_FULLSCREEN (WM_USER + 102)
+#define WM_USER_CLOSE      (WM_USER + 103)
+
 class Win32NativeViewport final : public INativeViewport {
 public:
     Win32NativeViewport() = default;
+
     ~Win32NativeViewport() override {
         Close();
     }
 
     bool Create(const std::string& title, int width, int height) override {
-        HINSTANCE hInstance = GetModuleHandleW(nullptr);
-        const wchar_t CLASS_NAME[] = L"unkXwyno_Mirror_Viewport";
+        if (is_open_) return true;
 
-        WNDCLASSEXW wc{};
-        wc.cbSize        = sizeof(WNDCLASSEXW);
-        wc.style         = CS_HREDRAW | CS_VREDRAW;
-        wc.lpfnWndProc   = StaticWndProc;
-        wc.hInstance     = hInstance;
-        wc.hCursor       = LoadCursorW(nullptr, MAKEINTRESOURCEW(32512)); // IDC_ARROW
-        wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
-        wc.lpszClassName = CLASS_NAME;
+        title_ = title;
+        target_width_  = width > 0 ? width : 1920;
+        target_height_ = height > 0 ? height : 1080;
 
-        RegisterClassExW(&wc);
+        std::promise<bool> init_promise;
+        auto init_future = init_promise.get_future();
 
-        std::wstring title_w(title.begin(), title.end());
+        viewport_thread_ = std::thread(&Win32NativeViewport::ViewportThreadProc, this, std::ref(init_promise));
 
-        // Center on primary monitor
-        int screen_w = GetSystemMetrics(SM_CXSCREEN);
-        int screen_h = GetSystemMetrics(SM_CYSCREEN);
-        int pos_x = (screen_w - width) / 2;
-        int pos_y = (screen_h - height) / 2;
+        bool ok = init_future.get();
+        if (!ok) {
+            if (viewport_thread_.joinable()) viewport_thread_.join();
+            return false;
+        }
 
-        hwnd_ = CreateWindowExW(
-            WS_EX_APPWINDOW,
-            CLASS_NAME,
-            title_w.c_str(),
-            WS_POPUP | WS_VISIBLE | WS_SYSMENU | WS_MINIMIZEBOX | WS_THICKFRAME,
-            pos_x, pos_y, width, height,
-            nullptr, nullptr, hInstance, this
-        );
-
-        if (!hwnd_) return false;
-
-        width_  = width;
-        height_ = height;
         is_open_ = true;
         return true;
     }
 
     void Show(bool visible) override {
         if (hwnd_) {
-            ShowWindow(hwnd_, visible ? SW_SHOW : SW_HIDE);
+            PostMessageW(hwnd_, WM_USER_SHOW, visible ? 1 : 0, 0);
         }
     }
 
     void SetFullscreen(bool fullscreen) override {
-        if (!hwnd_) return;
-        if (fullscreen && !is_fullscreen_) {
-            GetWindowRect(hwnd_, &saved_rect_);
-            SetWindowLongPtr(hwnd_, GWL_STYLE, WS_POPUP | WS_VISIBLE);
-            int screen_w = GetSystemMetrics(SM_CXSCREEN);
-            int screen_h = GetSystemMetrics(SM_CYSCREEN);
-            SetWindowPos(hwnd_, HWND_TOP, 0, 0, screen_w, screen_h, SWP_FRAMECHANGED);
-            is_fullscreen_ = true;
-        } else if (!fullscreen && is_fullscreen_) {
-            SetWindowLongPtr(hwnd_, GWL_STYLE, WS_POPUP | WS_VISIBLE | WS_SYSMENU | WS_MINIMIZEBOX | WS_THICKFRAME);
-            SetWindowPos(hwnd_, HWND_NOTOPMOST,
-                         saved_rect_.left, saved_rect_.top,
-                         saved_rect_.right - saved_rect_.left,
-                         saved_rect_.bottom - saved_rect_.top,
-                         SWP_FRAMECHANGED);
-            is_fullscreen_ = false;
+        if (hwnd_) {
+            PostMessageW(hwnd_, WM_USER_FULLSCREEN, fullscreen ? 1 : 0, 0);
         }
     }
 
     void Close() override {
         if (hwnd_) {
-            DestroyWindow(hwnd_);
+            PostMessageW(hwnd_, WM_USER_CLOSE, 0, 0);
+            if (viewport_thread_.joinable()) {
+                viewport_thread_.join();
+            }
             hwnd_ = nullptr;
         }
         is_open_ = false;
     }
 
     [[nodiscard]] void* GetNativeHandle() const override {
-        return hwnd_;
+        return hwnd_.load();
     }
 
     [[nodiscard]] bool IsOpen() const override {
-        return is_open_;
+        return is_open_.load();
+    }
+
+    void GetWindowBounds(int& out_x, int& out_y, int& out_w, int& out_h) const override {
+        if (hwnd_) {
+            RECT rc{};
+            GetWindowRect(hwnd_, &rc);
+            out_x = rc.left;
+            out_y = rc.top;
+            out_w = rc.right - rc.left;
+            out_h = rc.bottom - rc.top;
+        } else {
+            out_x = 0; out_y = 0; out_w = 0; out_h = 0;
+        }
     }
 
     void SetTouchCallback(TouchInputCallback callback) override {
@@ -120,15 +112,68 @@ public:
         resize_callback_ = std::move(callback);
     }
 
+    void SetMoveCallback(MoveCallback callback) override {
+        move_callback_ = std::move(callback);
+    }
+
     void PollEvents() override {
-        MSG msg{};
-        while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
-            TranslateMessage(&msg);
-            DispatchMessageW(&msg);
-        }
+        // Dedicated thread continuously handles messages via GetMessageW.
     }
 
 private:
+    void ViewportThreadProc(std::promise<bool>& init_promise) {
+        SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
+
+        HINSTANCE hInstance = GetModuleHandleW(nullptr);
+        const wchar_t CLASS_NAME[] = L"unkXwyno_Mirror_Viewport";
+
+        WNDCLASSEXW wc{};
+        wc.cbSize        = sizeof(WNDCLASSEXW);
+        wc.style         = CS_HREDRAW | CS_VREDRAW;
+        wc.lpfnWndProc   = StaticWndProc;
+        wc.hInstance     = hInstance;
+        wc.hCursor       = LoadCursorW(nullptr, MAKEINTRESOURCEW(32512)); // IDC_ARROW
+        wc.hbrBackground = reinterpret_cast<HBRUSH>(GetStockObject(BLACK_BRUSH));
+        wc.lpszClassName = CLASS_NAME;
+
+        RegisterClassExW(&wc);
+
+        std::wstring title_w(title_.begin(), title_.end());
+
+        int screen_w = GetSystemMetrics(SM_CXSCREEN);
+        int screen_h = GetSystemMetrics(SM_CYSCREEN);
+        int pos_x = (screen_w - target_width_) / 2;
+        int pos_y = (screen_h - target_height_) / 2;
+
+        HWND hwnd = CreateWindowExW(
+            WS_EX_APPWINDOW,
+            CLASS_NAME,
+            title_w.c_str(),
+            WS_POPUP | WS_VISIBLE | WS_SYSMENU | WS_MINIMIZEBOX | WS_THICKFRAME,
+            pos_x, pos_y, target_width_, target_height_,
+            nullptr, nullptr, hInstance, this
+        );
+
+        if (!hwnd) {
+            init_promise.set_value(false);
+            return;
+        }
+
+        hwnd_.store(hwnd);
+        width_ = target_width_;
+        height_ = target_height_;
+        init_promise.set_value(true);
+
+        // Standard Win32 Message Loop on dedicated thread
+        MSG msg{};
+        while (GetMessageW(&msg, nullptr, 0, 0) > 0) {
+            TranslateMessage(&msg);
+            DispatchMessageW(&msg);
+        }
+
+        hwnd_.store(nullptr);
+    }
+
     static LRESULT CALLBACK StaticWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         Win32NativeViewport* self = nullptr;
         if (uMsg == WM_NCCREATE) {
@@ -147,12 +192,57 @@ private:
 
     LRESULT HandleMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         switch (uMsg) {
+            case WM_USER_SHOW:
+                ShowWindow(hwnd, wParam ? SW_SHOW : SW_HIDE);
+                return 0;
+
+            case WM_USER_FULLSCREEN: {
+                bool fs = (wParam != 0);
+                if (fs && !is_fullscreen_) {
+                    GetWindowRect(hwnd, &saved_rect_);
+                    SetWindowLongPtr(hwnd, GWL_STYLE, WS_POPUP | WS_VISIBLE);
+                    int sw = GetSystemMetrics(SM_CXSCREEN);
+                    int sh = GetSystemMetrics(SM_CYSCREEN);
+                    SetWindowPos(hwnd, HWND_TOP, 0, 0, sw, sh, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+                    is_fullscreen_ = true;
+                } else if (!fs && is_fullscreen_) {
+                    SetWindowLongPtr(hwnd, GWL_STYLE, WS_POPUP | WS_VISIBLE | WS_SYSMENU | WS_MINIMIZEBOX | WS_THICKFRAME);
+                    SetWindowPos(hwnd, HWND_NOTOPMOST,
+                                 saved_rect_.left, saved_rect_.top,
+                                 saved_rect_.right - saved_rect_.left,
+                                 saved_rect_.bottom - saved_rect_.top,
+                                 SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+                    is_fullscreen_ = false;
+                }
+                return 0;
+            }
+
+            case WM_USER_CLOSE:
+                DestroyWindow(hwnd);
+                return 0;
+
+            case WM_MOVE: {
+                int x = static_cast<short>(LOWORD(lParam));
+                int y = static_cast<short>(HIWORD(lParam));
+                if (move_callback_) {
+                    move_callback_(x, y, width_, height_);
+                }
+                return 0;
+            }
+
             case WM_SIZE: {
                 int w = LOWORD(lParam);
                 int h = HIWORD(lParam);
-                width_ = w;
-                height_ = h;
-                if (resize_callback_) resize_callback_(w, h);
+                if (w > 0 && h > 0) {
+                    width_ = w;
+                    height_ = h;
+                    if (resize_callback_) resize_callback_(w, h);
+                    if (move_callback_) {
+                        RECT rc{};
+                        GetWindowRect(hwnd, &rc);
+                        move_callback_(rc.left, rc.top, w, h);
+                    }
+                }
                 return 0;
             }
 
@@ -168,10 +258,10 @@ private:
                 int mouse_x = GET_X_LPARAM(lParam);
                 int mouse_y = GET_Y_LPARAM(lParam);
 
-                if (width_ > 0 && height_ > 0 && (is_down || action == UNKXWYNO_TOUCH_UP)) {
-                    uint16_t norm_x = static_cast<uint16_t>((std::max(0, std::min(mouse_x, width_)) * 65535) / width_);
-                    uint16_t norm_y = static_cast<uint16_t>((std::max(0, std::min(mouse_y, height_)) * 65535) / height_);
-                    touch_callback_(0, action, norm_x, norm_y, is_down ? 512 : 0);
+                if (width_ > 0 && height_ > 0) {
+                    uint16_t norm_x = static_cast<uint16_t>((std::clamp(mouse_x, 0, width_) * 65535) / width_);
+                    uint16_t norm_y = static_cast<uint16_t>((std::clamp(mouse_y, 0, height_) * 65535) / height_);
+                    touch_callback_(0, action, norm_x, norm_y, is_down ? 800 : 0);
                 }
                 return 0;
             }
@@ -179,40 +269,44 @@ private:
             case WM_KEYDOWN:
             case WM_KEYUP: {
                 if (key_callback_) {
-                    bool is_key_down = (uMsg == WM_KEYDOWN);
-                    uint16_t key_code = static_cast<uint16_t>(wParam);
-                    uint8_t modifiers = 0;
-                    if (GetKeyState(VK_SHIFT) & 0x8000) modifiers |= 1;
-                    if (GetKeyState(VK_CONTROL) & 0x8000) modifiers |= 2;
-                    if (GetKeyState(VK_MENU) & 0x8000) modifiers |= 4;
-                    key_callback_(key_code, is_key_down, modifiers);
+                    bool is_down = (uMsg == WM_KEYDOWN);
+                    uint16_t vkey = static_cast<uint16_t>(wParam);
+                    uint8_t mods = 0;
+                    if (GetKeyState(VK_SHIFT) & 0x8000) mods |= 1;
+                    if (GetKeyState(VK_CONTROL) & 0x8000) mods |= 2;
+                    if (GetKeyState(VK_MENU) & 0x8000) mods |= 4;
+                    key_callback_(vkey, is_down, mods);
                 }
                 return 0;
             }
 
-            case WM_CLOSE:
-                is_open_ = false;
-                ShowWindow(hwnd, SW_HIDE);
+            case WM_DESTROY:
+                PostQuitMessage(0);
                 return 0;
 
-            case WM_DESTROY:
-                is_open_ = false;
-                hwnd_ = nullptr;
-                return 0;
+            default:
+                break;
         }
         return DefWindowProcW(hwnd, uMsg, wParam, lParam);
     }
 
-    HWND hwnd_{nullptr};
-    int width_{1920};
-    int height_{1080};
-    bool is_open_{false};
-    bool is_fullscreen_{false};
+    std::string title_;
+    int target_width_ = 1920;
+    int target_height_ = 1080;
+    int width_ = 1920;
+    int height_ = 1080;
+
+    std::atomic<HWND> hwnd_{nullptr};
+    std::atomic<bool> is_open_{false};
+    bool is_fullscreen_ = false;
     RECT saved_rect_{};
 
+    std::thread viewport_thread_;
+
     TouchInputCallback touch_callback_;
-    KeyInputCallback key_callback_;
-    ResizeCallback resize_callback_;
+    KeyInputCallback   key_callback_;
+    ResizeCallback     resize_callback_;
+    MoveCallback       move_callback_;
 };
 
 std::unique_ptr<INativeViewport> CreatePlatformViewport() {
@@ -220,4 +314,5 @@ std::unique_ptr<INativeViewport> CreatePlatformViewport() {
 }
 
 } // namespace unkxwyno::renderer
+
 #endif // _WIN32

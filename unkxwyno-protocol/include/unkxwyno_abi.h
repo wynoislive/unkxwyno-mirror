@@ -256,6 +256,43 @@ UNKXWYNO_API void* UNKXWYNO_CALL unkxwyno_viewport_get_native_handle(
     unkxwyno_engine_t engine
 );
 
+/**
+ * @brief Query current client viewport window bounds for toolbar flush synchronization.
+ */
+UNKXWYNO_API unkxwyno_status_t UNKXWYNO_CALL unkxwyno_viewport_get_bounds(
+    unkxwyno_engine_t engine,
+    int* out_x,
+    int* out_y,
+    int* out_w,
+    int* out_h
+);
+
+typedef struct unkxwyno_keymap_badge {
+    float norm_x;
+    float norm_y;
+    float radius;
+    uint32_t color_rgba;
+    char label[8];
+} unkxwyno_keymap_badge_t;
+
+/**
+ * @brief Configure in-shader D3D11 HUD keymap badges.
+ */
+UNKXWYNO_API unkxwyno_status_t UNKXWYNO_CALL unkxwyno_set_keymap_hud(
+    unkxwyno_engine_t engine,
+    bool visible,
+    const unkxwyno_keymap_badge_t* badges,
+    size_t count
+);
+
+/**
+ * @brief Request physical phone screen off / low-power keepalive mode.
+ */
+UNKXWYNO_API unkxwyno_status_t UNKXWYNO_CALL unkxwyno_set_screen_power(
+    unkxwyno_engine_t engine,
+    bool screen_on
+);
+
 /* ============================================================================
  * INPUT INJECTION EXPORTS (SUB-1MS HARDWARE DISPATCH)
  * ============================================================================ */

@@ -11,9 +11,18 @@
 
 #include <cstdint>
 #include <memory>
+#include <vector>
 #include "../decoder/video_decoder.hpp"
 
 namespace unkxwyno::renderer {
+
+struct KeymapBadge {
+    float norm_x;        // 0.0f..1.0f
+    float norm_y;        // 0.0f..1.0f
+    float radius;        // normalized radius, e.g. 0.035f
+    uint32_t color_rgba; // 0xRRGGBBAA
+    char label[8];       // "W", "FIRE", "AIM"
+};
 
 class IVideoRenderer {
 public:
@@ -29,6 +38,9 @@ public:
 
     virtual void Resize(int width, int height) = 0;
     virtual void SetFullscreen(bool fullscreen) = 0;
+
+    virtual void SetKeymapBadges(const KeymapBadge* badges, size_t count) = 0;
+    virtual void SetHudVisible(bool visible) = 0;
 
     [[nodiscard]] virtual void* GetNativeDevice() = 0;
 };

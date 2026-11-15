@@ -123,6 +123,25 @@ namespace Unkxwyno.Desktop.Services
                 : IntPtr.Zero;
         }
 
+        public bool GetViewportBounds(out int x, out int y, out int width, out int height)
+        {
+            x = y = width = height = 0;
+            if (_engineHandle == IntPtr.Zero) return false;
+            return UnkxwynoNative.unkxwyno_viewport_get_bounds(_engineHandle, out x, out y, out width, out height) == UnkxwynoStatus.Success;
+        }
+
+        public bool SetKeymapHud(bool visible, UnkxwynoKeymapBadge[]? badges)
+        {
+            if (_engineHandle == IntPtr.Zero) return false;
+            return UnkxwynoNative.unkxwyno_set_keymap_hud(_engineHandle, visible, badges, (nuint)(badges?.Length ?? 0)) == UnkxwynoStatus.Success;
+        }
+
+        public bool SetScreenPower(bool powerOn)
+        {
+            if (_engineHandle == IntPtr.Zero) return false;
+            return UnkxwynoNative.unkxwyno_set_screen_power(_engineHandle, powerOn) == UnkxwynoStatus.Success;
+        }
+
         public void InjectTouch(byte pointerId, byte action, ushort x, ushort y, ushort pressure = 512)
         {
             if (_engineHandle != IntPtr.Zero)

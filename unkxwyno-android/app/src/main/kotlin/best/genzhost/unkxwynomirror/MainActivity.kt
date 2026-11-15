@@ -45,6 +45,8 @@ class MainActivity : ComponentActivity() {
     private var usbConnectedState = mutableStateOf(false)
 
     // Streaming parameters
+    private var isWirelessMode by mutableStateOf(false)
+    private var hostIpAddress by mutableStateOf("192.168.1.100")
     private var selectedFps by mutableIntStateOf(60)
     private var selectedBitrateMbps by mutableIntStateOf(25)
     private var isAudioEnabled by mutableStateOf(true)
@@ -83,9 +85,14 @@ class MainActivity : ComponentActivity() {
                     MirrorControlScreen(
                         isStreaming = isStreamingState.value,
                         isUsbConnected = usbConnectedState.value,
+                        isWireless = isWirelessMode,
+                        hostIp = hostIpAddress,
                         fps = selectedFps,
                         bitrateMbps = selectedBitrateMbps,
                         audioEnabled = isAudioEnabled,
+                        onWirelessChange = { isWirelessMode = it },
+                        onHostIpChange = { hostIpAddress = it },
+                        onAutoDiscover = { discoverPcBeacon { hostIpAddress = it } },
                         onFpsChange = { selectedFps = it },
                         onBitrateChange = { selectedBitrateMbps = it },
                         onAudioToggle = { isAudioEnabled = it },
@@ -131,6 +138,36 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun discoverPcBeacon(onDiscovered: (String) -> Unit) {
+        Thread {
+            try {
+                val socket = java.net.DatagramSocket()
+                socket.broadcast = true
+                socket.soTimeout = 2500
+                val msg = "UNKXWYNO_DISCOVERY_PING"
+                val packet = java.net.DatagramPacket(msg.toByteArray(), msg.length, java.net.InetAddress.getByName("255.255.255.255"), 8098)
+                socket.send(packet)
+
+                val recvBuf = ByteArray(256)
+                val recvPacket = java.net.DatagramPacket(recvBuf, recvBuf.size)
+                socket.receive(recvPacket)
+                val reply = String(recvPacket.data, 0, recvPacket.length)
+                if (reply.contains("UNKXWYNO_DISCOVERY_PONG")) {
+                    val ip = recvPacket.address.hostAddress ?: ""
+                    runOnUiThread {
+                        onDiscovered(ip)
+                        Toast.makeText(this, "Discovered unkXwyno PC: $ip", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                socket.close()
+            } catch (e: Exception) {
+                runOnUiThread {
+                    Toast.makeText(this, "Auto-discovery timed out. Enter IP manually.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.start()
+    }
+
     private fun startMirroringService(resultCode: Int, data: Intent) {
         val metrics = resources.displayMetrics
         val width = 1920
@@ -147,6 +184,9 @@ class MainActivity : ComponentActivity() {
             putExtra(MirroringService.EXTRA_BITRATE, selectedBitrateMbps * 1_000_000)
             putExtra(MirroringService.EXTRA_FPS, selectedFps)
             putExtra(MirroringService.EXTRA_AUDIO, isAudioEnabled)
+            if (isWirelessMode) {
+                putExtra(MirroringService.EXTRA_HOST_IP, hostIpAddress)
+            }
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -173,9 +213,14 @@ class MainActivity : ComponentActivity() {
 fun MirrorControlScreen(
     isStreaming: Boolean,
     isUsbConnected: Boolean,
+    isWireless: Boolean,
+    hostIp: String,
     fps: Int,
     bitrateMbps: Int,
     audioEnabled: Boolean,
+    onWirelessChange: (Boolean) -> Unit,
+    onHostIpChange: (String) -> Unit,
+    onAutoDiscover: () -> Unit,
     onFpsChange: (Int) -> Unit,
     onBitrateChange: (Int) -> Unit,
     onAudioToggle: (Boolean) -> Unit,
@@ -184,13 +229,13 @@ fun MirrorControlScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         // Header
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "unkXwyno Mirror",
                 fontSize = 28.sp,
@@ -202,7 +247,57 @@ fun MirrorControlScreen(
                 fontSize = 14.sp,
                 color = TextSecondary
             )
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Connection Mode Selector
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                FilterChip(
+                    selected = !isWireless,
+                    onClick = { onWirelessChange(false) },
+                    label = { Text("🔌 USB AOA 2.0") },
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                FilterChip(
+                    selected = isWireless,
+                    onClick = { onWirelessChange(true) },
+                    label = { Text("📶 Wi-Fi 8099") }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Wireless Host Input if Wi-Fi
+            if (isWireless) {
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text("Wireless PC Connection", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = BrandPrimary)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            OutlinedTextField(
+                                value = hostIp,
+                                onValueChange = onHostIpChange,
+                                singleLine = true,
+                                modifier = Modifier.weight(1f),
+                                label = { Text("PC IP Address", color = TextSecondary) }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Button(
+                                onClick = onAutoDiscover,
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF21262D))
+                            ) {
+                                Text("Scan", color = BrandPrimary)
+                            }
+                        }
+                    }
+                }
+            }
 
             // Status Card
             Card(
@@ -218,13 +313,14 @@ fun MirrorControlScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
+                        val transportText = if (isWireless) "Wi-Fi Mode ($hostIp:8099)" else if (isUsbConnected) "USB Host: Connected" else "USB Host: Waiting for Cable..."
                         Text(
-                            text = if (isUsbConnected) "USB Host: Connected" else "USB Host: Waiting...",
+                            text = transportText,
                             fontWeight = FontWeight.SemiBold,
-                            color = if (isUsbConnected) StatusGreen else TextSecondary
+                            color = if (isWireless || isUsbConnected) StatusGreen else TextSecondary
                         )
                         Text(
-                            text = if (isStreaming) "State: Streaming Live (1080p)" else "State: Idle",
+                            text = if (isStreaming) "State: Streaming Live (1080p D3D11VA)" else "State: Ready to Mirror",
                             fontSize = 13.sp,
                             color = TextSecondary
                         )
@@ -234,7 +330,7 @@ fun MirrorControlScreen(
                         modifier = Modifier
                             .size(14.dp)
                             .background(
-                                color = if (isStreaming) StatusGreen else if (isUsbConnected) BrandPrimary else Color.Gray,
+                                color = if (isStreaming) StatusGreen else if (isWireless || isUsbConnected) BrandPrimary else Color.Gray,
                                 shape = RoundedCornerShape(7.dp)
                             )
                     )
@@ -245,7 +341,7 @@ fun MirrorControlScreen(
         // Settings Section
         Column(modifier = Modifier.fillMaxWidth()) {
             Text("Encoding Parameters", fontWeight = FontWeight.Bold, color = TextPrimary)
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Framerate Selector
             Row(
@@ -269,7 +365,7 @@ fun MirrorControlScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Bitrate Slider
             Text("Bitrate: $bitrateMbps Mbps", color = TextSecondary)
@@ -284,7 +380,7 @@ fun MirrorControlScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Audio Capture Switch
             Row(

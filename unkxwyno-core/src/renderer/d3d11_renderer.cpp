@@ -171,6 +171,19 @@ void D3D11Renderer::Resize(int width, int height) {
     CreateRenderTarget();
 }
 
+void D3D11Renderer::SetKeymapBadges(const KeymapBadge* badges, size_t count) {
+    std::lock_guard<std::mutex> lock(render_mutex_);
+    badges_.clear();
+    if (badges && count > 0) {
+        badges_.assign(badges, badges + count);
+    }
+}
+
+void D3D11Renderer::SetHudVisible(bool visible) {
+    std::lock_guard<std::mutex> lock(render_mutex_);
+    hud_visible_ = visible;
+}
+
 void D3D11Renderer::SetFullscreen(bool fullscreen) {
     std::lock_guard<std::mutex> lock(render_mutex_);
     if (!swap_chain_) return;

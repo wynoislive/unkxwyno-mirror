@@ -16,6 +16,8 @@
 #include "../src/protocol/demuxer.hpp"
 #include "../src/protocol/aoa2_client.hpp"
 #include "../src/protocol/usbmuxd_client.hpp"
+#include "../src/protocol/airplay_server.hpp"
+#include "../src/network/tcp_server.hpp"
 #include "../src/usb/usb_transport.hpp"
 #include "../src/decoder/video_decoder.hpp"
 #include "../src/renderer/video_renderer.hpp"
@@ -42,7 +44,11 @@ public:
     unkxwyno_status_t ViewportCreate(const char* title, int width, int height);
     unkxwyno_status_t ViewportShow(bool visible);
     unkxwyno_status_t ViewportSetFullscreen(bool fullscreen);
+    unkxwyno_status_t ViewportGetBounds(int* out_x, int* out_y, int* out_width, int* out_height);
     void* ViewportGetNativeHandle();
+
+    unkxwyno_status_t SetKeymapHud(bool visible, const unkxwyno_keymap_badge_t* badges, size_t count);
+    unkxwyno_status_t SetScreenPower(bool power_on);
 
     unkxwyno_status_t InjectTouch(uint8_t pointer_id, uint8_t action, uint16_t x, uint16_t y, uint16_t pressure);
     unkxwyno_status_t InjectKey(uint16_t key_code, bool is_down, uint8_t modifiers);
@@ -62,6 +68,8 @@ private:
     std::shared_ptr<usb::IUsbDeviceSession> active_usb_session_;
     std::unique_ptr<protocol::Aoa2Client> aoa_client_;
     std::unique_ptr<protocol::UsbmuxdClient> usbmuxd_client_;
+    std::unique_ptr<protocol::AirPlayServer> airplay_server_;
+    std::unique_ptr<network::TcpServer> tcp_server_;
     protocol::ProtocolDemuxer demuxer_;
 
     std::unique_ptr<decoder::IVideoDecoder> video_decoder_;

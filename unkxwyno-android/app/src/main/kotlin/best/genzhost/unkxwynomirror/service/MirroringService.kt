@@ -17,12 +17,18 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.graphics.Color
+import android.graphics.PixelFormat
 import android.hardware.display.DisplayManager
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
+import android.view.View
+import android.view.WindowManager
 import androidx.core.app.NotificationCompat
 import best.genzhost.unkxwynomirror.MainActivity
 import best.genzhost.unkxwynomirror.audio.AudioCaptureManager
@@ -30,6 +36,9 @@ import best.genzhost.unkxwynomirror.encoder.VideoEncoder
 import best.genzhost.unkxwynomirror.protocol.PacketFraming
 import best.genzhost.unkxwynomirror.usb.AoaAccessoryManager
 import java.io.InputStream
+import java.io.OutputStream
+import java.net.InetSocketAddress
+import java.net.Socket
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.concurrent.atomic.AtomicBoolean
@@ -49,18 +58,21 @@ class MirroringService : Service() {
         const val EXTRA_BITRATE     = "extra_bitrate"
         const val EXTRA_FPS         = "extra_fps"
         const val EXTRA_AUDIO       = "extra_audio"
+        const val EXTRA_HOST_IP     = "extra_host_ip"
 
         private const val NOTIFICATION_CHANNEL_ID = "unkxwyno_mirror_channel"
         private const val NOTIFICATION_ID = 1337
     }
 
     private var aoaManager: AoaAccessoryManager? = null
+    private var tcpSocket: Socket? = null
     private var mediaProjection: MediaProjection? = null
     private var videoEncoder: VideoEncoder? = null
     private var audioCapture: AudioCaptureManager? = null
 
     private val isRunning = AtomicBoolean(false)
     private var controlThread: Thread? = null
+    private var blackOverlayView: View? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -119,16 +131,39 @@ class MirroringService : Service() {
         val mpManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         mediaProjection = mpManager.getMediaProjection(resultCode, resultData)
 
-        // Try opening AOA Accessory
-        val connected = aoaManager?.openAccessory() ?: false
-        if (!connected || aoaManager?.outputStream == null) {
-            Log.e(TAG, "Failed to connect to AOA accessory host.")
+        var outStream: OutputStream? = null
+        var inStream: InputStream? = null
+
+        val hostIp = intent.getStringExtra(EXTRA_HOST_IP)
+        if (!hostIp.isNullOrBlank()) {
+            try {
+                val sock = Socket()
+                sock.tcpNoDelay = true
+                sock.sendBufferSize = 1024 * 1024
+                sock.connect(InetSocketAddress(hostIp, 8099), 3000)
+                tcpSocket = sock
+                outStream = sock.getOutputStream()
+                inStream = sock.getInputStream()
+                Log.i(TAG, "Connected to unkXwyno PC via Wi-Fi: $hostIp:8099")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to connect to wireless host $hostIp:8099: ${e.message}")
+            }
+        }
+
+        if (outStream == null || inStream == null) {
+            val connected = aoaManager?.openAccessory() ?: false
+            if (connected && aoaManager?.outputStream != null) {
+                outStream = aoaManager!!.outputStream
+                inStream = aoaManager!!.inputStream
+                Log.i(TAG, "Connected to unkXwyno PC via USB AOA 2.0")
+            }
+        }
+
+        if (outStream == null || inStream == null) {
+            Log.e(TAG, "No connection available (neither Wi-Fi nor USB AOA).")
             stopSelf()
             return
         }
-
-        val outStream = aoaManager!!.outputStream!!
-        val inStream = aoaManager!!.inputStream!!
 
         // Initialize Video Encoder
         videoEncoder = VideoEncoder(
@@ -150,9 +185,9 @@ class MirroringService : Service() {
             ).apply { start() }
         }
 
-        // Start Control Packet Receiver Thread (Handles Ping, IDR Request, Bitrate changes)
+        // Start Control Packet Receiver Thread (Handles Ping, IDR Request, Screen Power)
         controlThread = Thread({
-            runControlLoop(inStream)
+            runControlLoop(inStream, outStream)
         }, "unkXwyno-ControlReceiver").apply { start() }
 
         Log.i(TAG, "unkXwyno Mirroring Service running.")
@@ -160,6 +195,8 @@ class MirroringService : Service() {
 
     private fun stopStreaming() {
         if (!isRunning.getAndSet(false)) return
+
+        setScreenPower(true)
 
         controlThread?.interrupt()
         controlThread = null
@@ -175,11 +212,63 @@ class MirroringService : Service() {
         } catch (_: Exception) {}
         mediaProjection = null
 
+        try {
+            tcpSocket?.close()
+        } catch (_: Exception) {}
+        tcpSocket = null
+
         aoaManager?.closeAccessory()
         Log.i(TAG, "unkXwyno Mirroring Service stopped.")
     }
 
-    private fun runControlLoop(inStream: InputStream) {
+    private fun setScreenPower(on: Boolean) {
+        val mainHandler = Handler(Looper.getMainLooper())
+        mainHandler.post {
+            val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            if (!on) {
+                if (blackOverlayView == null) {
+                    val view = View(this).apply {
+                        setBackgroundColor(Color.BLACK)
+                    }
+                    val layoutParams = WindowManager.LayoutParams(
+                        WindowManager.LayoutParams.MATCH_PARENT,
+                        WindowManager.LayoutParams.MATCH_PARENT,
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                        else
+                            @Suppress("DEPRECATION")
+                            WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,
+                        WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                        WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                        PixelFormat.OPAQUE
+                    ).apply {
+                        screenBrightness = 0.0f // OLED minimum brightness keep-alive
+                    }
+                    try {
+                        windowManager.addView(view, layoutParams)
+                        blackOverlayView = view
+                        Log.i(TAG, "Safe Screen-Off active: OLED pure-black keep-alive mode engaged.")
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Cannot add screen-off overlay: ${e.message}")
+                    }
+                }
+            } else {
+                blackOverlayView?.let {
+                    try {
+                        windowManager.removeView(it)
+                        Log.i(TAG, "Safe Screen-Off deactivated: Screen restored.")
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Cannot remove screen-off overlay: ${e.message}")
+                    }
+                    blackOverlayView = null
+                }
+            }
+        }
+    }
+
+    private fun runControlLoop(inStream: InputStream, outStream: OutputStream) {
         val headerBuf = ByteArray(PacketFraming.HEADER_SIZE)
         val byteBuffer = ByteBuffer.wrap(headerBuf).order(ByteOrder.LITTLE_ENDIAN)
 
@@ -198,9 +287,9 @@ class MirroringService : Service() {
                 val packetType = byteBuffer.get()
                 val sequence = byteBuffer.get()
 
-                // Skip or read payload
+                // Read payload if present
+                val payload = if (bodyLen > 0) ByteArray(bodyLen) else ByteArray(0)
                 if (bodyLen > 0) {
-                    val payload = ByteArray(bodyLen)
                     var pRead = 0
                     while (pRead < bodyLen) {
                         val r = inStream.read(payload, pRead, bodyLen - pRead)
@@ -213,18 +302,21 @@ class MirroringService : Service() {
                 if (channelId == PacketFraming.CHANNEL_CONTROL) {
                     when (packetType) {
                         PacketFraming.CTRL_PING -> {
-                            aoaManager?.outputStream?.let { out ->
-                                PacketFraming.writePacket(
-                                    out,
-                                    PacketFraming.CHANNEL_CONTROL,
-                                    PacketFraming.CTRL_PONG,
-                                    sequence,
-                                    ByteArray(0)
-                                )
-                            }
+                            PacketFraming.writePacket(
+                                outStream,
+                                PacketFraming.CHANNEL_CONTROL,
+                                PacketFraming.CTRL_PONG,
+                                sequence,
+                                ByteArray(0)
+                            )
                         }
                         PacketFraming.CTRL_REQ_KEYFRAME -> {
                             videoEncoder?.requestKeyframe()
+                        }
+                        PacketFraming.CTRL_SET_SCREEN_POWER -> {
+                            val powerOn = if (payload.isNotEmpty()) (payload[0].toInt() != 0) else true
+                            Log.i(TAG, "Received UNKXWYNO_CTRL_SET_SCREEN_POWER: on=$powerOn")
+                            setScreenPower(powerOn)
                         }
                     }
                 }

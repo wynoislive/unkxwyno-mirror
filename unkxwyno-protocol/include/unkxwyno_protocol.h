@@ -87,6 +87,7 @@ typedef enum unkxwyno_control_type {
     UNKXWYNO_CTRL_SET_BITRATE    = 0x83, /* Request encoder bitrate adjustment (bps) */
     UNKXWYNO_CTRL_SET_FPS        = 0x84, /* Request target framerate (60, 120, 144, 240) */
     UNKXWYNO_CTRL_ROTATION_SYNC  = 0x85, /* Device orientation sync (0, 90, 180, 270) */
+    UNKXWYNO_CTRL_SET_SCREEN_POWER = 0x86, /* OLED pure-black screen-off mode (0=off, 1=on) */
     UNKXWYNO_CTRL_DISCONNECT     = 0x8F  /* Graceful session termination */
 } unkxwyno_control_type_t;
 

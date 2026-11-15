@@ -17,6 +17,8 @@ set(CORE_SOURCES
     src/protocol/demuxer.cpp
     src/protocol/aoa2_client.cpp
     src/protocol/usbmuxd_client.cpp
+    src/protocol/airplay_server.cpp
+    src/network/tcp_server.cpp
     src/engine.cpp
     src/abi_exports.cpp
 )

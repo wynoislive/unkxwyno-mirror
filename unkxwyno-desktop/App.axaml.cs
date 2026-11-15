@@ -26,10 +26,38 @@ namespace Unkxwyno.Desktop
                     DataContext = viewModel
                 };
 
+                ViewportToolbarWindow? toolbarWindow = null;
+
+                viewModel.OnRequestShowToolbar += () =>
+                {
+                    if (toolbarWindow == null)
+                    {
+                        toolbarWindow = new ViewportToolbarWindow(engineService);
+                    }
+                    toolbarWindow.SnapFlushAboveViewport();
+                };
+
                 viewModel.OnRequestOpenKeymapper += () =>
                 {
                     var keymapperWindow = new KeymapperOverlayWindow(engineService);
                     keymapperWindow.Show();
+                };
+
+                viewModel.OnRequestPickBlueStacksConfig += async () =>
+                {
+                    var topLevel = Avalonia.Controls.TopLevel.GetTopLevel(mainWindow);
+                    if (topLevel != null)
+                    {
+                        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions
+                        {
+                            Title = "Select BlueStacks / MSI App Player Keymap (.cfg / .json)",
+                            AllowMultiple = false
+                        });
+                        if (files.Count > 0)
+                        {
+                            viewModel.LoadBlueStacksConfigFile(files[0].Path.LocalPath);
+                        }
+                    }
                 };
 
                 desktop.MainWindow = mainWindow;

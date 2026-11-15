@@ -116,6 +116,35 @@ UNKXWYNO_API void* UNKXWYNO_CALL unkxwyno_viewport_get_native_handle(
     return engine->impl->ViewportGetNativeHandle();
 }
 
+UNKXWYNO_API unkxwyno_status_t UNKXWYNO_CALL unkxwyno_viewport_get_bounds(
+    unkxwyno_engine_t engine,
+    int* out_x,
+    int* out_y,
+    int* out_w,
+    int* out_h
+) {
+    if (!engine || !engine->impl) return UNKXWYNO_ERR_INVALID_PARAM;
+    return engine->impl->ViewportGetBounds(out_x, out_y, out_w, out_h);
+}
+
+UNKXWYNO_API unkxwyno_status_t UNKXWYNO_CALL unkxwyno_set_keymap_hud(
+    unkxwyno_engine_t engine,
+    bool visible,
+    const unkxwyno_keymap_badge_t* badges,
+    size_t count
+) {
+    if (!engine || !engine->impl) return UNKXWYNO_ERR_INVALID_PARAM;
+    return engine->impl->SetKeymapHud(visible, badges, count);
+}
+
+UNKXWYNO_API unkxwyno_status_t UNKXWYNO_CALL unkxwyno_set_screen_power(
+    unkxwyno_engine_t engine,
+    bool screen_on
+) {
+    if (!engine || !engine->impl) return UNKXWYNO_ERR_INVALID_PARAM;
+    return engine->impl->SetScreenPower(screen_on);
+}
+
 UNKXWYNO_API unkxwyno_status_t UNKXWYNO_CALL unkxwyno_inject_touch(
     unkxwyno_engine_t engine,
     uint8_t pointer_id,

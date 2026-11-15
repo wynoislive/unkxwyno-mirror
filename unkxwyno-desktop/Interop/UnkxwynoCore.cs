@@ -107,6 +107,17 @@ namespace Unkxwyno.Desktop.Interop
         public ushort Reserved;
     }
 
+    [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Ansi)]
+    public struct UnkxwynoKeymapBadge
+    {
+        public float NormX;
+        public float NormY;
+        public float Radius;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 8)]
+        public string Label;
+        public uint ColorRgba;
+    }
+
     // Callback Delegates
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void StateCallback(in UnkxwynoDeviceInfo device, UnkxwynoDeviceState state, IntPtr userData);
@@ -173,6 +184,29 @@ namespace Unkxwyno.Desktop.Interop
 
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr unkxwyno_viewport_get_native_handle(IntPtr engine);
+
+        [DllImport(LibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern UnkxwynoStatus unkxwyno_viewport_get_bounds(
+            IntPtr engine,
+            out int outX,
+            out int outY,
+            out int outWidth,
+            out int outHeight
+        );
+
+        [DllImport(LibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern UnkxwynoStatus unkxwyno_set_keymap_hud(
+            IntPtr engine,
+            [MarshalAs(UnmanagedType.I1)] bool visible,
+            [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)] UnkxwynoKeymapBadge[]? badges,
+            nuint count
+        );
+
+        [DllImport(LibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern UnkxwynoStatus unkxwyno_set_screen_power(
+            IntPtr engine,
+            [MarshalAs(UnmanagedType.I1)] bool powerOn
+        );
 
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl)]
         public static extern UnkxwynoStatus unkxwyno_inject_touch(

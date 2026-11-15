@@ -3,159 +3,321 @@
         xmlns:vm="using:Unkxwyno.Desktop.ViewModels"
         x:Class="Unkxwyno.Desktop.Views.MainWindow"
         x:DataType="vm:MainViewModel"
-        Title="unkXwyno Mirror Control Dock"
-        Width="460" Height="620"
+        Title="unkXwyno Mirror - Pro Gaming Studio"
+        Width="640" Height="580"
         CanResize="False"
         WindowStartupLocation="CenterScreen"
         SystemDecorations="None"
         Background="Transparent"
         TransparencyLevelHint="Mica,AcrylicBlur">
 
-    <Border Background="#161B22EE"
+    <!-- Obsidian Window Shell -->
+    <Border Background="#0B0E14"
             CornerRadius="16"
-            BorderBrush="#00E5FF44"
-            BorderThickness="1.5"
-            BoxShadow="0 8 32 #88000000"
-            Padding="20">
-        <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+            BorderBrush="#232B3A"
+            BorderThickness="1"
+            BoxShadow="0 12 40 #BB000000">
+        <Grid ColumnDefinitions="64,*">
             
-            <!-- Top Drag Handle & Title Bar -->
-            <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,16" PointerPressed="OnDragWindow">
-                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                    <Border Width="12" Height="12" CornerRadius="6" Background="{StaticResource BrandPrimaryBrush}" />
-                    <TextBlock Text="unkXwyno" FontWeight="Bold" FontSize="18" Foreground="{StaticResource BrandPrimaryBrush}" />
-                    <TextBlock Text="Mirror" FontWeight="SemiBold" FontSize="18" Foreground="#F0F6FC" />
-                </StackPanel>
+            <!-- Left Slim Icon Sidebar -->
+            <Border Grid.Column="0" Background="#0E121A"
+                    CornerRadius="16,0,0,16"
+                    BorderBrush="#1B2230" BorderThickness="0,0,1,0">
+                <Grid RowDefinitions="Auto,*,Auto" Margin="0,16,0,16">
+                    <!-- Brand Icon -->
+                    <Border Grid.Row="0" Width="36" Height="36" CornerRadius="10"
+                            Background="#00E5FF1A" BorderBrush="#00E5FF44" BorderThickness="1"
+                            HorizontalAlignment="Center" Margin="0,0,0,24">
+                        <TextBlock Text="⚡" FontSize="18" Foreground="#00E5FF"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
 
-                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
-                    <Button Width="28" Height="28" CornerRadius="14" Background="#21262D" Foreground="#8B949E"
-                            Content="─" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                            Padding="0" Click="OnMinimizeClick" />
-                    <Button Width="28" Height="28" CornerRadius="14" Background="#FF525233" Foreground="#FF5252"
-                            Content="✕" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                            Padding="0" Click="OnCloseClick" />
-                </StackPanel>
-            </Grid>
+                    <!-- Navigation Tab Buttons -->
+                    <StackPanel Grid.Row="1" Spacing="12" HorizontalAlignment="Center">
+                        <!-- Tab 0: Home -->
+                        <Button Width="44" Height="44" CornerRadius="10" Padding="0"
+                                Background="Transparent" ToolTip.Tip="Home Dashboard"
+                                Command="{Binding GoToHomeCommand}">
+                            <TextBlock Text="🏠" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Button>
 
-            <!-- Status Pill Card -->
-            <Border Grid.Row="1" Background="#0D1117" CornerRadius="12" Padding="14" Margin="0,0,0,16"
-                    BorderBrush="#30363D" BorderThickness="1">
-                <Grid ColumnDefinitions="*,Auto">
-                    <StackPanel Grid.Column="0" Spacing="4">
-                        <TextBlock Text="CONNECTION STATUS" FontSize="11" FontWeight="Bold" Foreground="#8B949E" />
-                        <TextBlock Text="{Binding StatusText}" FontWeight="SemiBold" FontSize="14" Foreground="#F0F6FC" />
+                        <!-- Tab 1: Profiles -->
+                        <Button Width="44" Height="44" CornerRadius="10" Padding="0"
+                                Background="Transparent" ToolTip.Tip="Game Profiles"
+                                Command="{Binding GoToProfilesCommand}">
+                            <TextBlock Text="📋" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Button>
+
+                        <!-- Tab 2: Keymapper -->
+                        <Button Width="44" Height="44" CornerRadius="10" Padding="0"
+                                Background="Transparent" ToolTip.Tip="Keymapper &amp; Mouse Aim"
+                                Command="{Binding GoToKeymapperCommand}">
+                            <TextBlock Text="🎮" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Button>
+
+                        <!-- Tab 3: Optimization -->
+                        <Button Width="44" Height="44" CornerRadius="10" Padding="0"
+                                Background="Transparent" ToolTip.Tip="Display &amp; Audio Optimization"
+                                Command="{Binding GoToOptimizationCommand}">
+                            <TextBlock Text="⚡" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Button>
+
+                        <!-- Tab 4: Settings -->
+                        <Button Width="44" Height="44" CornerRadius="10" Padding="0"
+                                Background="Transparent" ToolTip.Tip="Settings &amp; Info"
+                                Command="{Binding GoToSettingsCommand}">
+                            <TextBlock Text="⚙" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Button>
                     </StackPanel>
-                    <Border Grid.Column="1" Width="12" Height="12" CornerRadius="6"
-                            Background="{StaticResource StatusGreenBrush}" VerticalAlignment="Center" />
+
+                    <!-- Bottom Status Indicator -->
+                    <Border Grid.Row="2" Width="10" Height="10" CornerRadius="5"
+                            Background="{StaticResource StatusGreenBrush}"
+                            HorizontalAlignment="Center"
+                            ToolTip.Tip="Engine Core Ready" />
                 </Grid>
             </Border>
 
-            <!-- Real-Time Telemetry HUD Grid -->
-            <Grid Grid.Row="2" ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" Margin="0,0,0,16">
-                <!-- Framerate -->
-                <Border Grid.Row="0" Grid.Column="0" Background="#21262D" CornerRadius="8" Padding="12" Margin="0,0,4,4">
-                    <StackPanel Spacing="2">
-                        <TextBlock Text="RENDER FRAMERATE" FontSize="10" Foreground="#8B949E" FontWeight="Bold" />
-                        <TextBlock Text="{Binding FpsText}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource BrandPrimaryBrush}" />
+            <!-- Main Content Area -->
+            <Grid Grid.Column="1" RowDefinitions="Auto,*" Margin="20,16,20,20">
+                
+                <!-- Top Header & Window Controls -->
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,16" PointerPressed="OnDragWindow">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <TextBlock Text="unkXwyno" FontWeight="Bold" FontSize="18" Foreground="#00E5FF" />
+                        <TextBlock Text="Studio" FontWeight="SemiBold" FontSize="18" Foreground="#F0F6FC" />
+                        <Border Background="#6366F122" BorderBrush="#6366F166" BorderThickness="1"
+                                CornerRadius="4" Padding="6,2" Margin="6,0,0,0">
+                            <TextBlock Text="PRO GAMING" FontSize="10" FontWeight="Bold" Foreground="#6366F1" />
+                        </Border>
                     </StackPanel>
-                </Border>
 
-                <!-- Bitrate -->
-                <Border Grid.Row="0" Grid.Column="1" Background="#21262D" CornerRadius="8" Padding="12" Margin="4,0,0,4">
-                    <StackPanel Spacing="2">
-                        <TextBlock Text="VIDEO BITRATE" FontSize="10" Foreground="#8B949E" FontWeight="Bold" />
-                        <TextBlock Text="{Binding BitrateText}" FontSize="18" FontWeight="Bold" Foreground="#7C4DFF" />
-                    </StackPanel>
-                </Border>
-
-                <!-- Hardware Decode Latency -->
-                <Border Grid.Row="1" Grid.Column="0" Background="#21262D" CornerRadius="8" Padding="12" Margin="0,4,4,0">
-                    <StackPanel Spacing="2">
-                        <TextBlock Text="HARDWARE DECODE" FontSize="10" Foreground="#8B949E" FontWeight="Bold" />
-                        <TextBlock Text="{Binding DecodeLatencyText}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource StatusGreenBrush}" />
-                    </StackPanel>
-                </Border>
-
-                <!-- Audio Buffer Jitter -->
-                <Border Grid.Row="1" Grid.Column="1" Background="#21262D" CornerRadius="8" Padding="12" Margin="4,4,0,0">
-                    <StackPanel Spacing="2">
-                        <TextBlock Text="AUDIO WASAPI BUFFER" FontSize="10" Foreground="#8B949E" FontWeight="Bold" />
-                        <TextBlock Text="{Binding AudioBufferText}" FontSize="18" FontWeight="Bold" Foreground="#FFD600" />
-                    </StackPanel>
-                </Border>
-            </Grid>
-
-            <!-- Controls & Options Area -->
-            <StackPanel Grid.Row="3" Spacing="14" Margin="0,0,0,16">
-                <TextBlock Text="STREAMING SETTINGS" FontSize="11" FontWeight="Bold" Foreground="#8B949E" />
-
-                <!-- Target Framerate Radio Buttons -->
-                <Grid ColumnDefinitions="Auto,*">
-                    <TextBlock Grid.Column="0" Text="Target FPS" VerticalAlignment="Center" Foreground="#F0F6FC" FontSize="13" />
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="6">
-                        <RadioButton Content="60" GroupName="FpsGroup" IsChecked="True" Foreground="#F0F6FC" />
-                        <RadioButton Content="90" GroupName="FpsGroup" Foreground="#F0F6FC" />
-                        <RadioButton Content="120" GroupName="FpsGroup" Foreground="#F0F6FC" />
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                        <Button Width="28" Height="28" CornerRadius="14" Background="#141923" Foreground="#8B949E"
+                                Content="─" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                Padding="0" Click="OnMinimizeClick" />
+                        <Button Width="28" Height="28" CornerRadius="14" Background="#FF525222" Foreground="#FF5252"
+                                Content="✕" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                Padding="0" Click="OnCloseClick" />
                     </StackPanel>
                 </Grid>
 
-                <!-- Bitrate Slider -->
-                <StackPanel Spacing="4">
-                    <Grid ColumnDefinitions="*,Auto">
-                        <TextBlock Grid.Column="0" Text="Max Bitrate (Mbps)" Foreground="#F0F6FC" FontSize="13" />
-                        <TextBlock Grid.Column="1" Text="{Binding SelectedBitrateMbps, StringFormat='{}{0} Mbps'}" Foreground="{StaticResource BrandPrimaryBrush}" FontWeight="SemiBold" />
+                <!-- Dynamic Tab Views -->
+                <Panel Grid.Row="1">
+                    
+                    <!-- TAB 0: HOME DASHBOARD -->
+                    <Grid RowDefinitions="Auto,Auto,*,Auto" IsVisible="{Binding IsHomeTab}">
+                        <!-- Connection Hero Card -->
+                        <Border Grid.Row="0" Background="#141923" CornerRadius="12" Padding="16" Margin="0,0,0,16"
+                                BorderBrush="#232B3A" BorderThickness="1">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Spacing="6">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Border Background="#00E5FF1A" BorderBrush="#00E5FF44" BorderThickness="1"
+                                                CornerRadius="4" Padding="6,2">
+                                            <TextBlock Text="{Binding DeviceBadgeText}" FontSize="11" FontWeight="Bold" Foreground="#00E5FF" />
+                                        </Border>
+                                        <TextBlock Text="READY TO STREAM" FontSize="11" FontWeight="Bold" Foreground="#8B949E" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding StatusText}" FontWeight="SemiBold" FontSize="14" Foreground="#F0F6FC" />
+                                </StackPanel>
+
+                                <!-- QR Pair Button -->
+                                <Button Grid.Column="1" Background="#21262D" CornerRadius="8" Padding="10,6"
+                                        Command="{Binding ToggleQrModalCommand}" ToolTip.Tip="Pair Phone via QR Code">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="📶" />
+                                        <TextBlock Text="Wireless Pair" FontSize="12" FontWeight="SemiBold" Foreground="#F0F6FC" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <!-- Telemetry Pills Grid -->
+                        <Grid Grid.Row="1" ColumnDefinitions="*,*,*,*" Margin="0,0,0,16">
+                            <!-- Framerate -->
+                            <Border Grid.Column="0" Background="#141923" CornerRadius="8" Padding="10" Margin="0,0,4,0"
+                                    BorderBrush="#232B3A" BorderThickness="1">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="FRAMERATE" FontSize="9" Foreground="#8B949E" FontWeight="Bold" />
+                                    <TextBlock Text="{Binding FpsText}" FontSize="16" FontWeight="Bold" Foreground="#00E5FF" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Bitrate -->
+                            <Border Grid.Column="1" Background="#141923" CornerRadius="8" Padding="10" Margin="4,0,4,0"
+                                    BorderBrush="#232B3A" BorderThickness="1">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="BITRATE" FontSize="9" Foreground="#8B949E" FontWeight="Bold" />
+                                    <TextBlock Text="{Binding BitrateText}" FontSize="16" FontWeight="Bold" Foreground="#6366F1" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Latency -->
+                            <Border Grid.Column="2" Background="#141923" CornerRadius="8" Padding="10" Margin="4,0,4,0"
+                                    BorderBrush="#232B3A" BorderThickness="1">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="LATENCY" FontSize="9" Foreground="#8B949E" FontWeight="Bold" />
+                                    <TextBlock Text="{Binding DecodeLatencyText}" FontSize="16" FontWeight="Bold" Foreground="#00E676" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Decoder -->
+                            <Border Grid.Column="3" Background="#141923" CornerRadius="8" Padding="10" Margin="4,0,0,0"
+                                    BorderBrush="#232B3A" BorderThickness="1">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="DECODER" FontSize="9" Foreground="#8B949E" FontWeight="Bold" />
+                                    <TextBlock Text="{Binding DecoderName}" FontSize="14" FontWeight="Bold" Foreground="#FFD600" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- Central Device Graphic & Info -->
+                        <Border Grid.Row="2" Background="#14192366" CornerRadius="12" Padding="20" Margin="0,0,0,16"
+                                BorderBrush="#232B3A" BorderThickness="1">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+                                <TextBlock Text="📱 ⇄ 💻" FontSize="36" HorizontalAlignment="Center" />
+                                <TextBlock Text="Zero-Latency Screen Mirroring" FontSize="16" FontWeight="Bold" Foreground="#F0F6FC" HorizontalAlignment="Center" />
+                                <TextBlock Text="Supports Android USB AOA 2.0, Wi-Fi 8099, and Apple iOS AirPlay."
+                                           FontSize="12" Foreground="#8B949E" HorizontalAlignment="Center" TextAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Glowing Start Mirroring CTA -->
+                        <Button Grid.Row="3" Height="52" CornerRadius="12" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                Command="{Binding ToggleStreamingCommand}"
+                                Background="#00E5FF" Foreground="#000000">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <TextBlock Text="⚡" FontSize="18" FontWeight="Bold" />
+                                <TextBlock Text="{Binding StreamingBtnText}" FontSize="15" FontWeight="Bold" />
+                            </StackPanel>
+                        </Button>
                     </Grid>
-                    <Slider Minimum="10" Maximum="60" Value="{Binding SelectedBitrateMbps}" />
-                </StackPanel>
 
-                <!-- Toggles -->
-                <Grid ColumnDefinitions="*,Auto">
-                    <TextBlock Grid.Column="0" Text="Internal Audio (48kHz WASAPI)" VerticalAlignment="Center" Foreground="#F0F6FC" FontSize="13" />
-                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding IsAudioEnabled}" OnContent="" OffContent="" />
-                </Grid>
+                    <!-- TAB 1: PROFILES -->
+                    <StackPanel Spacing="14" IsVisible="{Binding IsProfilesTab}">
+                        <TextBlock Text="ACTIVE GAME PROFILES" FontSize="12" FontWeight="Bold" Foreground="#8B949E" />
+                        <Border Background="#141923" CornerRadius="10" Padding="14" BorderBrush="#00E5FF44" BorderThickness="1">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Spacing="4">
+                                    <TextBlock Text="{Binding ActiveProfileName}" FontWeight="Bold" FontSize="14" Foreground="#00E5FF" />
+                                    <TextBlock Text="FreeLook Mouse Aim: Enabled (F1) • Sub-1ms Touch Digitizer" FontSize="12" Foreground="#8B949E" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" Text="ACTIVE" FontWeight="Bold" Foreground="#00E676" VerticalAlignment="Center" />
+                            </Grid>
+                        </Border>
 
-                <Grid ColumnDefinitions="*,Auto">
-                    <TextBlock Grid.Column="0" Text="Hardware Multi-Touch Backchannel" VerticalAlignment="Center" Foreground="#F0F6FC" FontSize="13" />
-                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding IsTouchInputEnabled}" OnContent="" OffContent="" />
-                </Grid>
-            </StackPanel>
+                        <Button Height="44" CornerRadius="8" Background="#21262D" HorizontalAlignment="Stretch"
+                                Command="{Binding RequestImportConfigCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                                <TextBlock Text="📂" />
+                                <TextBlock Text="Import BlueStacks / MSI App Player Keymap (.cfg)" FontWeight="SemiBold" Foreground="#F0F6FC" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
 
-            <!-- Bottom Action Buttons -->
-            <StackPanel Grid.Row="4" Spacing="10">
-                <Grid ColumnDefinitions="*,*">
-                    <Button Grid.Column="0" Margin="0,0,4,0" Background="#21262D" Foreground="#F0F6FC"
-                            Height="40" CornerRadius="8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                            Command="{Binding OpenKeymapperCommand}">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="🎮" />
-                            <TextBlock Text="Keymapper" FontWeight="SemiBold" />
+                    <!-- TAB 2: KEYMAPPER -->
+                    <StackPanel Spacing="14" IsVisible="{Binding IsKeymapperTab}">
+                        <TextBlock Text="FREELOOK MOUSE AIM &amp; KEYMAPPER" FontSize="12" FontWeight="Bold" Foreground="#8B949E" />
+
+                        <Border Background="#141923" CornerRadius="10" Padding="14" BorderBrush="#232B3A" BorderThickness="1">
+                            <StackPanel Spacing="10">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="Aim Sensitivity X" Foreground="#F0F6FC" FontSize="13" />
+                                    <TextBlock Grid.Column="1" Text="{Binding AimSensitivityX, StringFormat='{}{0:F1}'}" Foreground="#00E5FF" FontWeight="Bold" />
+                                </Grid>
+                                <Slider Minimum="0.2" Maximum="5.0" Value="{Binding AimSensitivityX}" />
+
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0" Text="Aim Sensitivity Y" Foreground="#F0F6FC" FontSize="13" />
+                                    <TextBlock Grid.Column="1" Text="{Binding AimSensitivityY, StringFormat='{}{0:F1}'}" Foreground="#00E5FF" FontWeight="Bold" />
+                                </Grid>
+                                <Slider Minimum="0.2" Maximum="5.0" Value="{Binding AimSensitivityY}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="In-Shader Keymap HUD Badges" VerticalAlignment="Center" Foreground="#F0F6FC" FontSize="13" />
+                            <ToggleSwitch Grid.Column="1" IsChecked="{Binding IsKeymapHudEnabled}" OnContent="" OffContent="" />
+                        </Grid>
+
+                        <Button Height="44" CornerRadius="8" Background="#6366F1" HorizontalAlignment="Stretch"
+                                Command="{Binding OpenKeymapperCommand}">
+                            <TextBlock Text="OPEN VISUAL KEYMAPPER OVERLAY" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" />
+                        </Button>
+                    </StackPanel>
+
+                    <!-- TAB 3: OPTIMIZATION -->
+                    <StackPanel Spacing="14" IsVisible="{Binding IsOptimizationTab}">
+                        <TextBlock Text="HARDWARE ACCELERATION &amp; DISPLAY" FontSize="12" FontWeight="Bold" Foreground="#8B949E" />
+
+                        <Border Background="#141923" CornerRadius="10" Padding="14" BorderBrush="#232B3A" BorderThickness="1">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Spacing="2">
+                                    <TextBlock Text="Safe OLED Screen-Off" FontWeight="Bold" Foreground="#F0F6FC" FontSize="14" />
+                                    <TextBlock Text="Pure-black keep-alive mode: turns off phone pixels without pausing MediaProjection."
+                                               FontSize="11" Foreground="#8B949E" />
+                                </StackPanel>
+                                <Button Grid.Column="1" Background="#21262D" CornerRadius="6" Padding="10,6"
+                                        Command="{Binding ToggleScreenOffCommand}">
+                                    <TextBlock Text="{Binding ScreenOffBtnText}" FontWeight="Bold" Foreground="#00E5FF" />
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <StackPanel Spacing="4">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Max Bitrate (Mbps)" Foreground="#F0F6FC" FontSize="13" />
+                                <TextBlock Grid.Column="1" Text="{Binding SelectedBitrateMbps, StringFormat='{}{0} Mbps'}" Foreground="#00E5FF" FontWeight="SemiBold" />
+                            </Grid>
+                            <Slider Minimum="10" Maximum="60" Value="{Binding SelectedBitrateMbps}" />
                         </StackPanel>
-                    </Button>
 
-                    <Button Grid.Column="1" Margin="4,0,0,0" Background="#21262D" Foreground="#F0F6FC"
-                            Height="40" CornerRadius="8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                            Command="{Binding ToggleFullscreenCommand}">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="⛶" />
-                            <TextBlock Text="Fullscreen" FontWeight="SemiBold" />
-                        </StackPanel>
-                    </Button>
-                </Grid>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="Internal Audio (48kHz WASAPI Low Jitter)" VerticalAlignment="Center" Foreground="#F0F6FC" FontSize="13" />
+                            <ToggleSwitch Grid.Column="1" IsChecked="{Binding IsAudioEnabled}" OnContent="" OffContent="" />
+                        </Grid>
+                    </StackPanel>
 
-                <!-- Start/Stop Streaming Master Button -->
-                <Button Height="48" CornerRadius="12" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                        Command="{Binding ToggleStreamingCommand}"
-                        Background="{Binding IsStreaming, Converter={x:Null}}">
-                    <Button.Styles>
-                        <Style Selector="Button">
-                            <Setter Property="Background" Value="{StaticResource BrandPrimaryBrush}" />
-                            <Setter Property="Foreground" Value="#000000" />
-                        </Style>
-                    </Button.Styles>
-                    <TextBlock Text="START ULTRA-FAST MIRRORING" FontWeight="Bold" FontSize="15" />
-                </Button>
-            </StackPanel>
+                    <!-- TAB 4: SETTINGS -->
+                    <StackPanel Spacing="14" IsVisible="{Binding IsSettingsTab}">
+                        <TextBlock Text="SERVER PORTS &amp; NETWORK PROTOCOL" FontSize="12" FontWeight="Bold" Foreground="#8B949E" />
 
+                        <Border Background="#141923" CornerRadius="10" Padding="14" BorderBrush="#232B3A" BorderThickness="1">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="• Android Wireless Stream: TCP Port 8099 (Low-Latency Stream)" Foreground="#F0F6FC" FontSize="12" />
+                                <TextBlock Text="• Android UDP Discovery Beacon: UDP Port 8098" Foreground="#F0F6FC" FontSize="12" />
+                                <TextBlock Text="• iOS AirPlay RTSP Server: Port 7000 (RTP H.264 Video)" Foreground="#F0F6FC" FontSize="12" />
+                                <TextBlock Text="• iOS USB usbmuxd Tunnel: Port 27015 (VID 0x05AC)" Foreground="#F0F6FC" FontSize="12" />
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="unkXwyno Mirror v1.0.0 — Open Source under MIT License." FontSize="11" Foreground="#8B949E" />
+                        <TextBlock Text="Official Repository: https://unkxwyno-mirror.genzhost.best" FontSize="11" Foreground="#00E5FF" />
+                    </StackPanel>
+
+                    <!-- QR PAIRING MODAL OVERLAY -->
+                    <Border Background="#000000CC" CornerRadius="12" IsVisible="{Binding IsQrModalOpen}">
+                        <Border Background="#141923" BorderBrush="#00E5FF" BorderThickness="1.5"
+                                CornerRadius="14" Padding="20" Width="360" Height="300"
+                                HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <StackPanel Spacing="12" HorizontalAlignment="Center">
+                                <TextBlock Text="Wireless Android Pairing" FontWeight="Bold" FontSize="16" Foreground="#00E5FF" HorizontalAlignment="Center" />
+                                <Border Width="140" Height="140" Background="#FFFFFF" CornerRadius="8" Padding="10" HorizontalAlignment="Center">
+                                    <!-- QR Code Graphic Placeholder -->
+                                    <TextBlock Text="[ QR CODE ]&#x0a;unkXwyno&#x0a;8099"
+                                               Foreground="#000000" FontWeight="Bold"
+                                               TextAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Text="Scan with unkXwyno Android App or connect to port 8099" FontSize="11" Foreground="#8B949E" TextAlignment="Center" />
+                                <Button Content="Close" HorizontalAlignment="Center" Background="#21262D" Foreground="#F0F6FC"
+                                        Command="{Binding ToggleQrModalCommand}" Padding="16,6" CornerRadius="6" />
+                            </StackPanel>
+                        </Border>
+                    </Border>
+
+                </Panel>
+            </Grid>
         </Grid>
     </Border>
 </Window>

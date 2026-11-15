@@ -23,9 +23,10 @@ object PacketFraming {
     const val CHANNEL_INPUT: Byte   = 0x03
 
     // Control Types
-    const val CTRL_PING: Byte         = 0x80.toByte()
-    const val CTRL_PONG: Byte         = 0x81.toByte()
-    const val CTRL_REQ_KEYFRAME: Byte = 0x82.toByte()
+    const val CTRL_PING: Byte             = 0x80.toByte()
+    const val CTRL_PONG: Byte             = 0x81.toByte()
+    const val CTRL_REQ_KEYFRAME: Byte     = 0x82.toByte()
+    const val CTRL_SET_SCREEN_POWER: Byte = 0x86.toByte()
 
     // Video Types
     const val VIDEO_CONFIG: Byte   = 0x01 // SPS/PPS

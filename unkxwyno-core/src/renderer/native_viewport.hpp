@@ -19,6 +19,7 @@ namespace unkxwyno::renderer {
 using TouchInputCallback = std::function<void(uint8_t pointer_id, uint8_t action, uint16_t x, uint16_t y, uint16_t pressure)>;
 using KeyInputCallback   = std::function<void(uint16_t key_code, bool is_down, uint8_t modifiers)>;
 using ResizeCallback     = std::function<void(int width, int height)>;
+using MoveCallback       = std::function<void(int x, int y, int width, int height)>;
 
 class INativeViewport {
 public:
@@ -31,10 +32,12 @@ public:
 
     [[nodiscard]] virtual void* GetNativeHandle() const = 0;
     [[nodiscard]] virtual bool IsOpen() const = 0;
+    virtual void GetWindowBounds(int& out_x, int& out_y, int& out_w, int& out_h) const = 0;
 
     virtual void SetTouchCallback(TouchInputCallback callback) = 0;
     virtual void SetKeyCallback(KeyInputCallback callback) = 0;
     virtual void SetResizeCallback(ResizeCallback callback) = 0;
+    virtual void SetMoveCallback(MoveCallback callback) = 0;
 
     virtual void PollEvents() = 0;
 };

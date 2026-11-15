@@ -1,0 +1,72 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Unkxwyno.Desktop.Views.ViewportToolbarWindow"
+        Title="unkXwyno Quick Toolbar"
+        Width="380" Height="36"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Topmost="True"
+        SystemDecorations="None"
+        Background="Transparent"
+        WindowStartupLocation="Manual">
+
+    <Border Background="#141923EE"
+            BorderBrush="#232B3A"
+            BorderThickness="1"
+            CornerRadius="18"
+            BoxShadow="0 4 16 #88000000"
+            Padding="6,2">
+        <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+            <!-- Brand Badge -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" Margin="6,0,8,0">
+                <Border Width="8" Height="8" CornerRadius="4" Background="#00E5FF" VerticalAlignment="Center" />
+                <TextBlock Text="unkXwyno" FontSize="11" FontWeight="Bold" Foreground="#00E5FF" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <!-- Action Icon Buttons -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
+                <!-- Safe Screen Off -->
+                <Button Name="ScreenOffBtn" Width="28" Height="28" CornerRadius="14"
+                        Background="Transparent" BorderThickness="0" Padding="0"
+                        ToolTip.Tip="Safe OLED Screen Off (Keep-Alive Mode)" Click="OnScreenOffClick">
+                    <TextBlock Text="📱" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Button>
+
+                <!-- Keymap In-Shader HUD Badges -->
+                <Button Name="KeymapHudBtn" Width="28" Height="28" CornerRadius="14"
+                        Background="Transparent" BorderThickness="0" Padding="0"
+                        ToolTip.Tip="Toggle In-Shader Keymap HUD Badges" Click="OnToggleKeymapHudClick">
+                    <TextBlock Text="🎮" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Button>
+
+                <!-- FreeLook Mouse Aim Lock -->
+                <Button Name="MouseLockBtn" Width="28" Height="28" CornerRadius="14"
+                        Background="Transparent" BorderThickness="0" Padding="0"
+                        ToolTip.Tip="Toggle Mouse Aim / FreeLook Lock (F1)" Click="OnMouseLockClick">
+                    <TextBlock Text="🔒" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Button>
+
+                <!-- Audio Mute -->
+                <Button Name="AudioBtn" Width="28" Height="28" CornerRadius="14"
+                        Background="Transparent" BorderThickness="0" Padding="0"
+                        ToolTip.Tip="Mute / Unmute Stream Audio" Click="OnAudioClick">
+                    <TextBlock Text="🔊" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Button>
+
+                <!-- Fullscreen -->
+                <Button Width="28" Height="28" CornerRadius="14"
+                        Background="Transparent" BorderThickness="0" Padding="0"
+                        ToolTip.Tip="Toggle Fullscreen" Click="OnFullscreenClick">
+                    <TextBlock Text="⛶" FontSize="13" Foreground="#F0F6FC" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Button>
+
+                <!-- Close -->
+                <Button Width="28" Height="28" CornerRadius="14"
+                        Background="#FF525222" BorderThickness="0" Padding="0"
+                        ToolTip.Tip="Close Viewport" Click="OnCloseClick">
+                    <TextBlock Text="✕" FontSize="12" Foreground="#FF5252" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
