@@ -133,7 +133,7 @@ private:
         wc.lpfnWndProc   = StaticWndProc;
         wc.hInstance     = hInstance;
         wc.hCursor       = LoadCursorW(nullptr, MAKEINTRESOURCEW(32512)); // IDC_ARROW
-        wc.hbrBackground = reinterpret_cast<HBRUSH>(GetStockObject(BLACK_BRUSH));
+        wc.hbrBackground = nullptr; // Null brush so Windows GDI never clears or paints white over D3D11 swapchain
         wc.lpszClassName = CLASS_NAME;
 
         RegisterClassExW(&wc);
@@ -277,6 +277,17 @@ private:
                     if (GetKeyState(VK_MENU) & 0x8000) mods |= 4;
                     key_callback_(vkey, is_down, mods);
                 }
+                return 0;
+            }
+
+            case WM_ERASEBKGND:
+                // Return 1: Direct3D 11 handles all background rendering to avoid white flashes
+                return 1;
+
+            case WM_PAINT: {
+                PAINTSTRUCT ps;
+                HDC hdc = BeginPaint(hwnd, &ps);
+                EndPaint(hwnd, &ps);
                 return 0;
             }
 

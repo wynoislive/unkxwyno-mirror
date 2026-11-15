@@ -226,16 +226,42 @@ std::vector<UsbDeviceDescriptor> WinUsbTransport::EnumerateDevices() {
             std::string lower_path = path;
             std::transform(lower_path.begin(), lower_path.end(), lower_path.begin(), ::tolower);
 
+            // Support all major Android OEMs & Apple iOS devices
             if (lower_path.find("vid_18d1") != std::string::npos) {
                 desc.vendor_id = 0x18D1;
                 desc.is_android_aoa = true;
                 desc.manufacturer = "Google / Android";
-                desc.product_name = "Android AOA Accessory";
+                desc.product_name = "Pixel / AOA Device";
+            } else if (lower_path.find("vid_04e8") != std::string::npos) {
+                desc.vendor_id = 0x04E8;
+                desc.is_android_aoa = true;
+                desc.manufacturer = "Samsung Electronics";
+                desc.product_name = "Galaxy Smartphone";
+            } else if (lower_path.find("vid_2717") != std::string::npos) {
+                desc.vendor_id = 0x2717;
+                desc.is_android_aoa = true;
+                desc.manufacturer = "Xiaomi Communications";
+                desc.product_name = "Xiaomi / Redmi Device";
+            } else if (lower_path.find("vid_2a70") != std::string::npos || lower_path.find("vid_22d9") != std::string::npos) {
+                desc.vendor_id = 0x2A70;
+                desc.is_android_aoa = true;
+                desc.manufacturer = "OnePlus / Oppo";
+                desc.product_name = "OnePlus Smartphone";
+            } else if (lower_path.find("vid_2d95") != std::string::npos) {
+                desc.vendor_id = 0x2D95;
+                desc.is_android_aoa = true;
+                desc.manufacturer = "Vivo Mobile";
+                desc.product_name = "Vivo Smartphone";
             } else if (lower_path.find("vid_05ac") != std::string::npos) {
                 desc.vendor_id = 0x05AC;
                 desc.is_apple_ios = true;
                 desc.manufacturer = "Apple Inc.";
-                desc.product_name = "iOS Device";
+                desc.product_name = "Apple iPhone / iPad";
+            } else {
+                desc.vendor_id = 0x18D1;
+                desc.is_android_aoa = true;
+                desc.manufacturer = "Android Mobile";
+                desc.product_name = "USB Device";
             }
 
             devices.push_back(desc);

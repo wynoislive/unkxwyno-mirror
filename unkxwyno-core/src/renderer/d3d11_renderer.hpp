@@ -61,6 +61,9 @@ private:
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> d3d_context_;
     Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain_;
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> render_target_view_;
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> software_texture_;
+    int software_tex_w_{0};
+    int software_tex_h_{0};
 
     std::vector<KeymapBadge> badges_;
     std::mutex render_mutex_;

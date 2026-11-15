@@ -39,6 +39,14 @@ bool D3D11Renderer::Initialize(void* native_window_handle, int width, int height
 
     CreateRenderTarget();
     is_initialized_ = true;
+
+    // Immediately present an initial sleek obsidian gaming frame to prevent blank white viewport
+    if (render_target_view_ && d3d_context_) {
+        const float obsidian_clear[4] = { 0.043f, 0.055f, 0.078f, 1.0f }; // #0B0E14
+        d3d_context_->ClearRenderTargetView(render_target_view_.Get(), obsidian_clear);
+        swap_chain_->Present(0, DXGI_PRESENT_ALLOW_TEARING);
+    }
+
     std::cout << "[D3D11 Renderer] Initialized FLIP_DISCARD swapchain for " << width_ << "x" << height_ << "\n";
     return true;
 }
@@ -48,6 +56,9 @@ void D3D11Renderer::Shutdown() {
     if (!is_initialized_) return;
 
     render_target_view_.Reset();
+    software_texture_.Reset();
+    software_tex_w_ = 0;
+    software_tex_h_ = 0;
     swap_chain_.Reset();
     d3d_context_.Reset();
     d3d_device_.Reset();
@@ -207,6 +218,30 @@ void D3D11Renderer::RenderFrame(const decoder::DecodedFrame& frame) {
         if (SUCCEEDED(swap_chain_->GetBuffer(0, IID_PPV_ARGS(&back_buffer)))) {
             auto* src_tex = static_cast<ID3D11Texture2D*>(frame.native_surface);
             d3d_context_->CopyResource(back_buffer.Get(), src_tex);
+        }
+    } else if (frame.raw_pixels != nullptr && frame.width > 0 && frame.height > 0) {
+        // Software decoded buffer presentation
+        if (!software_texture_ || software_tex_w_ != frame.width || software_tex_h_ != frame.height) {
+            D3D11_TEXTURE2D_DESC desc{};
+            desc.Width = static_cast<UINT>(frame.width);
+            desc.Height = static_cast<UINT>(frame.height);
+            desc.MipLevels = 1;
+            desc.ArraySize = 1;
+            desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+            desc.SampleDesc.Count = 1;
+            desc.Usage = D3D11_USAGE_DEFAULT;
+            desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+            if (SUCCEEDED(d3d_device_->CreateTexture2D(&desc, nullptr, &software_texture_))) {
+                software_tex_w_ = frame.width;
+                software_tex_h_ = frame.height;
+            }
+        }
+        if (software_texture_) {
+            d3d_context_->UpdateSubresource(software_texture_.Get(), 0, nullptr, frame.raw_pixels, static_cast<UINT>(frame.width * 4), 0);
+            ComPtr<ID3D11Texture2D> back_buffer;
+            if (SUCCEEDED(swap_chain_->GetBuffer(0, IID_PPV_ARGS(&back_buffer)))) {
+                d3d_context_->CopyResource(back_buffer.Get(), software_texture_.Get());
+            }
         }
     }
 

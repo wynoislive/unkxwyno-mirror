@@ -42,6 +42,7 @@ if (WIN32)
         setupapi
         winusb
         ws2_32
+        iphlpapi
         d3d11
         dxgi
         mfplat

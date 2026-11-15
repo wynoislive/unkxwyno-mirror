@@ -1,6 +1,6 @@
 /**
  * @file MainViewModel.cs
- * @brief ViewModel for unkXwyno Pro Gaming Studio & Telemetry Dashboard (DouWan-Inspired Design).
+ * @brief ViewModel for unkXwyno Pro Gaming Studio (High-Taste Modern UI).
  * @version 1.0.0
  * 
  * Copyright (c) 2026 unkXwyno. Open source under the MIT License.
@@ -23,8 +23,9 @@ namespace Unkxwyno.Desktop.ViewModels
     {
         private readonly MirrorEngineService _engineService;
 
+        // Navigation Tabs: 0: Home, 1: Profiles, 2: Keymapper, 3: Optimization, 4: Settings
         [ObservableProperty]
-        private int _selectedTabIndex = 0; // 0: Home, 1: Profiles, 2: Keymapper, 3: Optimization, 4: Settings
+        private int _selectedTabIndex = 0;
 
         public bool IsHomeTab => SelectedTabIndex == 0;
         public bool IsProfilesTab => SelectedTabIndex == 1;
@@ -41,7 +42,7 @@ namespace Unkxwyno.Desktop.ViewModels
             OnPropertyChanged(nameof(IsSettingsTab));
         }
 
-        // Connection Modes: 0: Wired USB, 1: Wireless Wi-Fi, 2: Apple AirPlay
+        // Connection Modes: 0: Cable USB, 1: Wireless Wi-Fi, 2: Apple AirPlay
         [ObservableProperty]
         private int _selectedConnectionMode = 0;
 
@@ -57,19 +58,19 @@ namespace Unkxwyno.Desktop.ViewModels
         }
 
         [ObservableProperty]
-        private string _statusText = "Ready - Connect device via USB, Wi-Fi, or AirPlay";
+        private string _statusText = "Ready - Connect device via USB Cable, Wi-Fi, or iOS AirPlay";
 
         [ObservableProperty]
-        private string _deviceBadgeText = "USB / Wi-Fi / AirPlay Ready";
+        private string _deviceBadgeText = "AOA 2.0 / Wi-Fi / AirPlay Ready";
 
         [ObservableProperty]
-        private string _connectedDeviceModel = "Auto-Scanning USB Accessories...";
+        private string _connectedDeviceModel = "Auto-Scanning USB Ports...";
 
         [ObservableProperty]
         private string _connectedDeviceManufacturer = "Android / Apple Device";
 
         [ObservableProperty]
-        private string _connectionProtocol = "AOA 2.0 / Wi-Fi / AirPlay";
+        private string _usbConnectionStatus = "AOA 2.0 Plug-and-Play Ready";
 
         [ObservableProperty]
         private string _localIpAddress = "192.168.1.4";
@@ -177,14 +178,14 @@ namespace Unkxwyno.Desktop.ViewModels
                     UnkxwynoDeviceState.Streaming => $"Streaming: {dev.ModelName} (Ultra-Low Latency)",
                     UnkxwynoDeviceState.Connecting => "Negotiating AOA 2.0 Accessory Handshake...",
                     UnkxwynoDeviceState.Error => "USB Transmission Error",
-                    _ => "Ready - Connect phone via USB, Wi-Fi, or AirPlay"
+                    _ => "Ready - Connect phone via USB Cable, Wi-Fi, or AirPlay"
                 };
 
                 ConnectedDeviceModel = state switch
                 {
                     UnkxwynoDeviceState.Connected => dev.ModelName,
                     UnkxwynoDeviceState.Streaming => dev.ModelName,
-                    _ => "Auto-Scanning USB Accessories..."
+                    _ => "Auto-Scanning USB Ports..."
                 };
 
                 ConnectedDeviceManufacturer = state switch
@@ -192,6 +193,13 @@ namespace Unkxwyno.Desktop.ViewModels
                     UnkxwynoDeviceState.Connected => dev.Manufacturer,
                     UnkxwynoDeviceState.Streaming => dev.Manufacturer,
                     _ => "Android / Apple Device"
+                };
+
+                UsbConnectionStatus = state switch
+                {
+                    UnkxwynoDeviceState.Connected => "Device Attached & Authorized",
+                    UnkxwynoDeviceState.Streaming => "Streaming Active (Hardware D3D11)",
+                    _ => "AOA 2.0 Plug-and-Play Ready"
                 };
 
                 DeviceBadgeText = state switch
@@ -287,7 +295,7 @@ namespace Unkxwyno.Desktop.ViewModels
                     _engineService.ShowViewport(true);
                     _engineService.Start();
                     IsStreaming = true;
-                    StreamingBtnText = "STOP MIRRORING";
+                    StreamingBtnText = "STOP ACTIVE STREAM";
                     StatusText = "Engine Active - Mirroring Display";
 
                     // Apply in-shader keymap badges if enabled
