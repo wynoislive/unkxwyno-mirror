@@ -20,3 +20,7 @@ local.properties
 # OS files
 .DS_Store
 Thumbs.db
+
+# Research & Reversing Targets (Keep clean-room open-source repo free of vendor binaries)
+source_sample_examples/
+output/
