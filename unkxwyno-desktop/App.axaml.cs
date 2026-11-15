@@ -19,7 +19,8 @@ namespace Unkxwyno.Desktop
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 var engineService = new MirrorEngineService();
-                var viewModel = new MainViewModel(engineService);
+                var adbService = new AdbDeviceService();
+                var viewModel = new MainViewModel(engineService, adbService);
 
                 var mainWindow = new MainWindow
                 {
@@ -61,7 +62,11 @@ namespace Unkxwyno.Desktop
                 };
 
                 desktop.MainWindow = mainWindow;
-                desktop.Exit += (s, e) => engineService.Dispose();
+                desktop.Exit += (s, e) =>
+                {
+                    engineService.Dispose();
+                    adbService.Dispose();
+                };
             }
 
             super_call();

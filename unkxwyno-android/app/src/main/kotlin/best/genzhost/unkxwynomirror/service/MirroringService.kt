@@ -150,6 +150,22 @@ class MirroringService : Service() {
             }
         }
 
+        // Attempt ADB reverse USB tunnel on localhost:8099 (Wired Cable Mirroring without AOA permissions)
+        if (outStream == null || inStream == null) {
+            try {
+                val sock = Socket()
+                sock.tcpNoDelay = true
+                sock.sendBufferSize = 1024 * 1024
+                sock.connect(InetSocketAddress("127.0.0.1", 8099), 1500)
+                tcpSocket = sock
+                outStream = sock.getOutputStream()
+                inStream = sock.getInputStream()
+                Log.i(TAG, "Connected to unkXwyno PC via USB Cable (ADB Reverse Tunnel 127.0.0.1:8099)")
+            } catch (e: Exception) {
+                Log.d(TAG, "Local ADB reverse tunnel not active: ${e.message}")
+            }
+        }
+
         if (outStream == null || inStream == null) {
             val connected = aoaManager?.openAccessory() ?: false
             if (connected && aoaManager?.outputStream != null) {

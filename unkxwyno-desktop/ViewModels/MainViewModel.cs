@@ -22,6 +22,13 @@ namespace Unkxwyno.Desktop.ViewModels
     public partial class MainViewModel : ObservableObject
     {
         private readonly MirrorEngineService _engineService;
+        private readonly AdbDeviceService _adbService;
+
+        [ObservableProperty]
+        private string _detectedDevicesCountText = "Scanning USB Ports...";
+
+        [ObservableProperty]
+        private bool _isAdbDeviceDetected = false;
 
         // Navigation Tabs: 0: Home, 1: Profiles, 2: Keymapper, 3: Optimization, 4: Settings
         [ObservableProperty]
@@ -155,9 +162,28 @@ namespace Unkxwyno.Desktop.ViewModels
         public event Action? OnRequestShowToolbar;
         public event Action? OnRequestPickBlueStacksConfig;
 
-        public MainViewModel(MirrorEngineService engineService)
+        public MainViewModel(MirrorEngineService engineService, AdbDeviceService adbService)
         {
             _engineService = engineService;
+            _adbService = adbService;
+
+            _adbService.OnDevicesUpdated += (devs) =>
+            {
+                if (devs.Count > 0)
+                {
+                    ConnectedDeviceModel = devs[0].Model;
+                    ConnectedDeviceManufacturer = "Android (ADB Cable Tunnel)";
+                    UsbConnectionStatus = $"{devs[0].Model} Ready to Mirror";
+                    DeviceBadgeText = $"{devs[0].Model} [WIRED]";
+                    DetectedDevicesCountText = $"{devs.Count} Android Device{(devs.Count > 1 ? "s" : "")} Connected";
+                    IsAdbDeviceDetected = true;
+                }
+                else
+                {
+                    DetectedDevicesCountText = "Connect Phone via USB Cable (USB Debugging enabled)";
+                    IsAdbDeviceDetected = false;
+                }
+            };
 
             // Auto-detect Preferred Local LAN IP address
             try
@@ -291,6 +317,14 @@ namespace Unkxwyno.Desktop.ViewModels
 
                 if (_engineService.Initialize(cfg))
                 {
+                    // Automatically configure bidirectional ADB port tunnel for plugged-in Android phones
+                    if (_adbService.ConnectedDevices.Count > 0)
+                    {
+                        var dev = _adbService.ConnectedDevices[0];
+                        _ = _adbService.SetupPortForwardingAsync(dev.Serial, StreamPort);
+                        StatusText = $"Tunneling USB Cable to {dev.Model} (Port {StreamPort})...";
+                    }
+
                     _engineService.CreateViewport("unkXwyno Mirror - Low Latency Display", 1920, 1080);
                     _engineService.ShowViewport(true);
                     _engineService.Start();

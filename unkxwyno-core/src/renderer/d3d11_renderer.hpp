@@ -21,6 +21,8 @@
 #include <wrl/client.h>
 #include <mutex>
 #include <vector>
+#include <atomic>
+#include <thread>
 
 namespace unkxwyno::renderer {
 
@@ -39,6 +41,8 @@ public:
     void SetKeymapBadges(const KeymapBadge* badges, size_t count) override;
     void SetHudVisible(bool visible) override;
 
+    void PresentIdleFrame();
+
     [[nodiscard]] void* GetNativeDevice() override {
         return d3d_device_.Get();
     }
@@ -50,12 +54,16 @@ public:
 private:
     bool CreateDeviceAndSwapChain(HWND hwnd, int width, int height);
     void CreateRenderTarget();
+    void IdleRenderLoop();
 
     HWND hwnd_{nullptr};
     int width_{1920};
     int height_{1080};
     bool is_initialized_{false};
     bool hud_visible_{true};
+    std::atomic<bool> is_running_{false};
+    std::atomic<bool> has_received_frames_{false};
+    std::thread idle_render_thread_;
 
     Microsoft::WRL::ComPtr<ID3D11Device> d3d_device_;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> d3d_context_;

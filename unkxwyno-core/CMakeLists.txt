@@ -45,6 +45,7 @@ if (WIN32)
         iphlpapi
         d3d11
         dxgi
+        gdi32
         mfplat
         mfuuid
         ole32

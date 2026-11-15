@@ -306,7 +306,12 @@
                                             <TextBlock Text="✓ iOS usbmuxd tunnel: Direct Lightning / Type-C USB streaming on port 27015." FontSize="11" Foreground="#8B949E" />
                                         </StackPanel>
 
-                                        <TextBlock Text="Connect phone to PC with USB cable and click Start Mirroring below." FontSize="11" Foreground="#00E676" FontWeight="SemiBold" />
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <Border Width="8" Height="8" CornerRadius="4"
+                                                    Background="{Binding IsAdbDeviceDetected, Converter={x:Null}, FallbackValue=#00E676}"
+                                                    VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding DetectedDevicesCountText}" FontSize="11" Foreground="#00E676" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                        </StackPanel>
                                     </StackPanel>
                                 </Grid>
                             </Border>

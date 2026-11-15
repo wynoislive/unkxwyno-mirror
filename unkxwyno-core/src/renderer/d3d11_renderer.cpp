@@ -39,19 +39,45 @@ bool D3D11Renderer::Initialize(void* native_window_handle, int width, int height
 
     CreateRenderTarget();
     is_initialized_ = true;
+    is_running_ = true;
+    has_received_frames_ = false;
 
     // Immediately present an initial sleek obsidian gaming frame to prevent blank white viewport
     if (render_target_view_ && d3d_context_) {
-        const float obsidian_clear[4] = { 0.043f, 0.055f, 0.078f, 1.0f }; // #0B0E14
+        const float obsidian_clear[4] = { 0.035f, 0.043f, 0.059f, 1.0f }; // Sleek obsidian #090B0F
         d3d_context_->ClearRenderTargetView(render_target_view_.Get(), obsidian_clear);
         swap_chain_->Present(0, DXGI_PRESENT_ALLOW_TEARING);
     }
 
-    std::cout << "[D3D11 Renderer] Initialized FLIP_DISCARD swapchain for " << width_ << "x" << height_ << "\n";
+    // Launch active 30-60 FPS idle render loop until first video frame arrives
+    idle_render_thread_ = std::thread(&D3D11Renderer::IdleRenderLoop, this);
+
+    std::cout << "[D3D11 Renderer] Initialized FLIP_DISCARD swapchain with active idle HUD loop for " << width_ << "x" << height_ << "\n";
     return true;
 }
 
+void D3D11Renderer::PresentIdleFrame() {
+    std::lock_guard<std::mutex> lock(render_mutex_);
+    if (!is_initialized_ || !d3d_context_ || !swap_chain_ || !render_target_view_) return;
+    const float obsidian_clear[4] = { 0.035f, 0.043f, 0.059f, 1.0f };
+    d3d_context_->ClearRenderTargetView(render_target_view_.Get(), obsidian_clear);
+    swap_chain_->Present(0, DXGI_PRESENT_ALLOW_TEARING);
+}
+
+void D3D11Renderer::IdleRenderLoop() {
+    while (is_running_ && !has_received_frames_) {
+        PresentIdleFrame();
+        std::this_thread::sleep_for(std::chrono::milliseconds(33)); // ~30 FPS low-CPU idle heartbeat
+    }
+}
+
 void D3D11Renderer::Shutdown() {
+    is_running_ = false;
+    has_received_frames_ = true;
+    if (idle_render_thread_.joinable()) {
+        idle_render_thread_.join();
+    }
+
     std::lock_guard<std::mutex> lock(render_mutex_);
     if (!is_initialized_) return;
 
@@ -204,6 +230,8 @@ void D3D11Renderer::SetFullscreen(bool fullscreen) {
 void D3D11Renderer::RenderFrame(const decoder::DecodedFrame& frame) {
     std::lock_guard<std::mutex> lock(render_mutex_);
     if (!is_initialized_ || !d3d_context_ || !swap_chain_) return;
+
+    has_received_frames_ = true;
 
     // Clear background to dark gaming black
     const float clear_color[4] = { 0.05f, 0.05f, 0.05f, 1.0f };

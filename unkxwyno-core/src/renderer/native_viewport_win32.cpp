@@ -133,7 +133,7 @@ private:
         wc.lpfnWndProc   = StaticWndProc;
         wc.hInstance     = hInstance;
         wc.hCursor       = LoadCursorW(nullptr, MAKEINTRESOURCEW(32512)); // IDC_ARROW
-        wc.hbrBackground = nullptr; // Null brush so Windows GDI never clears or paints white over D3D11 swapchain
+        wc.hbrBackground = static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)); // Pure black background brush so GDI never flashes white
         wc.lpszClassName = CLASS_NAME;
 
         RegisterClassExW(&wc);
@@ -149,7 +149,7 @@ private:
             WS_EX_APPWINDOW,
             CLASS_NAME,
             title_w.c_str(),
-            WS_POPUP | WS_VISIBLE | WS_SYSMENU | WS_MINIMIZEBOX | WS_THICKFRAME,
+            WS_POPUP | WS_SYSMENU | WS_MINIMIZEBOX | WS_THICKFRAME, // Created hidden to allow D3D11 to clear to obsidian before display
             pos_x, pos_y, target_width_, target_height_,
             nullptr, nullptr, hInstance, this
         );
@@ -287,6 +287,7 @@ private:
             case WM_PAINT: {
                 PAINTSTRUCT ps;
                 HDC hdc = BeginPaint(hwnd, &ps);
+                FillRect(hdc, &ps.rcPaint, static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
                 EndPaint(hwnd, &ps);
                 return 0;
             }

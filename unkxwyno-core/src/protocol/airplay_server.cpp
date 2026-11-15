@@ -258,6 +258,15 @@ void AirPlayServer::MdnsThreadProc() {
     if (bcast_sock != INVALID_SOCKET) {
         unsigned char ttl = 255;
         setsockopt(bcast_sock, IPPROTO_IP, IP_MULTICAST_TTL, reinterpret_cast<const char*>(&ttl), sizeof(ttl));
+
+        // Explicitly bind multicast traffic to the physical LAN interface IP (e.g. 192.168.1.4)
+        // so packets reach the local Wi-Fi router rather than virtual VPN/WSL adapters!
+        in_addr if_addr{};
+        if_addr.s_addr = local_ip;
+        setsockopt(bcast_sock, IPPROTO_IP, IP_MULTICAST_IF, reinterpret_cast<const char*>(&if_addr), sizeof(if_addr));
+
+        unsigned char loop = 1;
+        setsockopt(bcast_sock, IPPROTO_IP, IP_MULTICAST_LOOP, reinterpret_cast<const char*>(&loop), sizeof(loop));
     }
 
     // Listener Socket (to answer active queries from iOS Control Center)
