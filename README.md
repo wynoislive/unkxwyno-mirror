@@ -1,11 +1,13 @@
 # unkXwyno Mirror
 
+[![Release](https://img.shields.io/github/v/release/wynoislive/unkxwyno-mirror?color=orange)](https://github.com/wynoislive/unkxwyno-mirror/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://isocpp.org/)
 [![.NET 9](https://img.shields.io/badge/.NET-9.0-purple.svg)](https://dotnet.microsoft.com/)
 [![Avalonia UI](https://img.shields.io/badge/UI-Avalonia%2011.1-blue.svg)](https://avaloniaui.net/)
 [![Android](https://img.shields.io/badge/Platform-Android%208.0%2B-brightgreen.svg)](https://unkxwyno-mirror.genzhost.best)
 
+> **Latest Release**: [https://github.com/wynoislive/unkxwyno-mirror/releases/tag/v1.0.0](https://github.com/wynoislive/unkxwyno-mirror/releases/tag/v1.0.0)  
 > **Official Project URI**: [https://unkxwyno-mirror.genzhost.best](https://unkxwyno-mirror.genzhost.best)  
 > **Android Companion Package**: `best.genzhost.unkxwynomirror`
 

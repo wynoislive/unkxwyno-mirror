@@ -21,6 +21,9 @@ local.properties
 .DS_Store
 Thumbs.db
 
+# Release artifacts directory
+release_artifacts/
+
 # Research & Reversing Targets (Keep clean-room open-source repo free of vendor binaries)
 source_sample_examples/
 output/
