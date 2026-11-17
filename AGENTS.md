@@ -1,23 +1,32 @@
-# Agent Rules & Instructions
+# Repository agent guidance
 
-## Core Directive: Mandatory & Proactive Skill Utilization
+## Scope
 
-> [!IMPORTANT]
-> **RULE:** Always identify, consult, and actively utilize whichever installed skill is helpful and relevant to formulating the best response or executing the user's task.
+This repository currently contains two DouWan installer binaries:
 
-### Skill Routing & Quick Reference
+- `ready-products/DouWan-Video-Setup-En-4.4.0.9.exe`
+- `ready-products/DouWan-Video-Setup-En-4.4.0.9-x64.exe`
 
-| Domain | Recommended Skill | When to Use |
-| :--- | :--- | :--- |
-| **Reverse Engineering & Protocols** | `reverse-engineer-anything`, `reverse-engineering-tools` | Binary reversing, x86/x64 disassembly, PE/Mach-O analysis, USB video streaming protocol dissection. |
-| **Android & APK Analysis** | `android-apk-reverse-engineering`, `apk-reverse`, `re-android-native` | APK decompilation, Smali analysis, JNI native library (.so) reversing, Android USB accessory (AOA) protocols. |
-| **ADB & Device Automation** | `adb`, `adb-debug`, `understanding-adb-architecture`, `android-device-automation` | Low-level ADB commands, device transport inspection, screen capture & touch input injection. |
-| **High-Performance Native Engineering** | `cpp-pro`, `cpp-coding-standards`, `rust-backend` | Writing high-throughput video decoder pipelines, low-latency screen mirroring logic, and hardware-accelerated rendering. |
-| **Bug Diagnosis & Diagnostics** | `diagnosing-bugs`, `concurrency-debugging` | Resolving frame drops, stutter, USB transmission timeouts, buffer desyncs, and audio/video latency. |
-| **Clean Architecture & Code Craft** | `clean-architecture`, `clean-code`, `code-craft` | Structuring modular, maintainable, decoupled core protocols and interface adapters. |
-| **Planning & Verification** | `gstack` (`plan-eng-review`, `qa`, `verify`) | Architecture roadmap, idempotency testing, protocol verification. |
+Treat these files as the primary investigation targets. Do not execute them unless
+the user explicitly requests runtime observation and the required safety checks
+have been completed.
 
-### Operational Rules
-1. **Scan available skills in `.agents/skills/`** before executing any task.
-2. **Consult `SKILL.md`**: When a skill matches the problem space, read its instructions and follow its workflow.
-3. **Reproducible & Clean Artifacts**: Keep research findings in `docs/` and `manual research/`, decompilation outputs and built binaries in `output/`, and maintain `source_sample_examples/` as the baseline.
+## Installed skills
+
+The following Codex skills are configured for this repository through the global
+skill installation:
+
+- `gstack` for routing reviews, QA, verification, and documentation workflows.
+- `reverse-engineer-anything` for static analysis of the installer artifacts.
+- `rea-tool-design` for REA tool and Evidence-contract work.
+- `rea-analysis-optimization` for REA analysis performance work.
+- `rea-ci-tests-audit` for REA test and CI audits.
+- `rea-changelog-update` for REA release-note work.
+
+## Analysis rules
+
+- Identify the exact target file and preserve its SHA-256 before analysis.
+- Keep observations, inferences, and unknowns separate.
+- Prefer static inspection and format-aware inventory before runtime execution.
+- Record evidence identifiers and analysis limitations in any report.
+- Do not modify or overwrite files under `ready-products/`.

@@ -1,0 +1,7 @@
+<Project>
+  <ItemGroup Condition="'$(UseUsbNativeTls)' == 'true'">
+    <None Include="$(MSBuildThisFileDirectory)out/deps/openssl-3.5.9/libssl-3-x64.dll" Link="libssl-3-x64.dll" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="$(MSBuildThisFileDirectory)out/deps/openssl-3.5.9/libcrypto-3-x64.dll" Link="libcrypto-3-x64.dll" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="$(MSBuildThisFileDirectory)out/deps/openssl-3.5.9/OpenSSL-LICENSE.txt" Link="OpenSSL-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "UNKXWYNO Mirror",
+  "version": 1,
+  "colors": {
+    "ground": "#0D1417",
+    "navigation": "#10181C",
+    "panel": "#172126",
+    "raised": "#202B30",
+    "border": "#2A393D",
+    "accent": "#68D8C9",
+    "accentForeground": "#062521",
+    "text": "#EDF3F1",
+    "textSecondary": "#A2B2B4",
+    "warning": "#F4C56A",
+    "error": "#FF8F87",
+    "success": "#7BDBA8"
+  },
+  "spacing": [4, 8, 12, 16, 24, 32, 48],
+  "radii": { "control": 8, "surface": 12 },
+  "minimumTarget": 44,
+  "typography": { "family": "Segoe UI Variable, Segoe UI, sans-serif" },
+  "motion": { "fastMs": 120, "standardMs": 200, "reduceMotion": true }
+}
+

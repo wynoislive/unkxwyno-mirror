@@ -1,0 +1,74 @@
+{
+  "Status": "STATIC_ADAPTATION_RUNTIME_UNVERIFIED",
+  "InputSha256": "c631ab24c8704683750afa23ffe16b4386ed1f886b1be203e92808770cd9f368",
+  "OutputSha256": "7a0830b237b93dd60e19da5d37853c75418afd3af808e1f1c220d00189b662d0",
+  "InputBytes": 19616256,
+  "OutputBytes": 19616768,
+  "Patches": [
+    {
+      "Id": "receiver-name",
+      "Address": "0x140dfed34",
+      "FileOffset": 14671156,
+      "Original": "446f7557616e00",
+      "Replacement": "4d6972726f7200",
+      "Reason": "Six-character advertised receiver label; exact shared literal."
+    },
+    {
+      "Id": "isolated-singleton",
+      "Address": "0x140e03d68",
+      "FileOffset": 14691688,
+      "Original": "444f5557414e5f42595f58494e4441574e",
+      "Replacement": "554e4b5857594e4f5f4d4952524f525f31",
+      "Reason": "Separate shared-memory key from the original product."
+    },
+    {
+      "Id": "suppress-startup-show",
+      "Address": "0x14002f6bd",
+      "FileOffset": 191165,
+      "Original": "ff159d8b0d00",
+      "Replacement": "909090909090",
+      "Reason": "Keep main object initialization; suppress initial showNormal."
+    },
+    {
+      "Id": "suppress-startup-activation",
+      "Address": "0x14002f6c6",
+      "FileOffset": 191174,
+      "Original": "ff15b4830d00",
+      "Replacement": "909090909090",
+      "Reason": "Do not activate the internal vendor window."
+    },
+    {
+      "Id": "suppress-startup-network-dialog",
+      "Address": "0x14002f6e3",
+      "FileOffset": 191203,
+      "Original": "c7442420ffffffff",
+      "Replacement": "e980000000909090",
+      "Reason": "Skip failed-network dialog; jump to timer-setup at 0x14002f768 instead of common cleanup, so the service timer always initialises."
+    },
+    {
+      "Id": "loopback-api-listener",
+      "Address": "0x1400d26b9",
+      "FileOffset": 858809,
+      "Original": "e812bc0000",
+      "Replacement": "e842194701",
+      "Reason": "Redirect only the API listener call; replace null/wildcard host with 127.0.0.1."
+    }
+  ],
+  "NewSection": {
+    "Name": ".umcore",
+    "Address": "0x141544000",
+    "FileOffset": 19616256,
+    "Code": "4c8d0509000000e9c4a2b9fe909090903132372e302e302e3100",
+    "TailTarget": "0x1400de2d0",
+    "Host": "127.0.0.1",
+    "Characteristics": "read-execute"
+  },
+  "UnchangedDependencies": 198,
+  "Evidence": "docs/ui/engine-investigation/engine-static.evidence.json",
+  "Limitations": [
+    "Qt profile path for the renamed executable is inferred, not observed.",
+    "Later engine dialogs/tray windows are suppressed only by an owned-process window monitor; absence of every vendor surface is unproved.",
+    "Portable packaging does not reproduce driver installation.",
+    "No native engine execution or phone test was performed."
+  ]
+}

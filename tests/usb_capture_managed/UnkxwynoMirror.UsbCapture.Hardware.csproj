@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseUsbNativeTls>true</UseUsbNativeTls>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../apps/desktop/Services/Usb/UsbMirrorStatus.cs" Link="UsbMirrorStatus.cs" />
+    <Compile Include="../../apps/desktop/Services/Usb/NativeUsbMirror.cs" Link="NativeUsbMirror.cs" />
+    <Compile Include="../../apps/desktop/Services/Usb/UsbTrustedSession.cs" Link="UsbTrustedSession.cs" />
+    <Compile Include="../../apps/desktop/Services/Usb/OpenSslUsbStream.cs" Link="OpenSslUsbStream.cs" />
+    <Compile Include="../../apps/desktop/Services/Usb/UsbmuxClient.cs" Link="UsbmuxClient.cs" />
+    <None Include="../../out/core/$(Configuration)/core/unkxwyno_core.dll" Link="unkxwyno_core.dll" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../out/core/$(Configuration)/core/libusb-1.0.dll" Link="libusb-1.0.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

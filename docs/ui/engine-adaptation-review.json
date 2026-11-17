@@ -1,0 +1,170 @@
+{
+  "review": "static only; no PE execution",
+  "inputSha256": "c631ab24c8704683750afa23ffe16b4386ed1f886b1be203e92808770cd9f368",
+  "outputSha256": "431af2143fc7ca5b844474f0f0fb94fc90447a4a90ebf5dba4cfef225de6041e",
+  "checks": [
+    {
+      "label": "Input digest matches audit",
+      "ok": true,
+      "detail": "c631ab24c8704683750afa23ffe16b4386ed1f886b1be203e92808770cd9f368"
+    },
+    {
+      "label": "Output digest matches audit",
+      "ok": true,
+      "detail": "431af2143fc7ca5b844474f0f0fb94fc90447a4a90ebf5dba4cfef225de6041e"
+    },
+    {
+      "label": "PE32+ x64",
+      "ok": true
+    },
+    {
+      "label": "Exactly one additional section",
+      "ok": true,
+      "detail": {
+        "before": 6,
+        "after": 7
+      }
+    },
+    {
+      "label": "Existing section headers unchanged",
+      "ok": true
+    },
+    {
+      "label": "New header fits SizeOfHeaders",
+      "ok": true,
+      "detail": {
+        "end": 912,
+        "headers": 1024
+      }
+    },
+    {
+      "label": "New section attributes",
+      "ok": true,
+      "detail": {
+        "name": ".umcore",
+        "virtual": 26,
+        "rva": 22298624,
+        "rawSize": 512,
+        "raw": 19616256,
+        "flags": 1610612768
+      }
+    },
+    {
+      "label": "Section file/RVA alignment",
+      "ok": true
+    },
+    {
+      "label": "Section has full file backing",
+      "ok": true
+    },
+    {
+      "label": "New section does not overlap old sections",
+      "ok": true
+    },
+    {
+      "label": "SizeOfImage covers section, rounded correctly",
+      "ok": true,
+      "detail": {
+        "actual": 22302720
+      }
+    },
+    {
+      "label": "SizeOfCode update",
+      "ok": true,
+      "detail": {
+        "before": 1063936,
+        "after": 1064448
+      }
+    },
+    {
+      "label": "API original instruction",
+      "ok": true
+    },
+    {
+      "label": "API CALL enters stub",
+      "ok": true,
+      "detail": {
+        "from": "0x1400d26b9",
+        "to": "0x141544000"
+      }
+    },
+    {
+      "label": "Stub LEA sets R8 to inline host",
+      "ok": true
+    },
+    {
+      "label": "Stub tail JMP enters original helper",
+      "ok": true
+    },
+    {
+      "label": "Exact loopback string and terminator",
+      "ok": true
+    },
+    {
+      "label": "No stack or nonvolatile mutation in stub",
+      "ok": true
+    },
+    {
+      "label": "Alert branch reaches common cleanup",
+      "ok": true
+    },
+    {
+      "label": "Receiver literal exact length and terminator",
+      "ok": true
+    },
+    {
+      "label": "Singleton length and existing trailing NUL",
+      "ok": true
+    },
+    {
+      "label": "Independent PE checksum",
+      "ok": true,
+      "detail": {
+        "stored": 19655136,
+        "computed": 19655136
+      }
+    },
+    {
+      "label": "Declared bytes receiver-name",
+      "ok": true
+    },
+    {
+      "label": "Declared bytes isolated-singleton",
+      "ok": true
+    },
+    {
+      "label": "Declared bytes suppress-startup-show",
+      "ok": true
+    },
+    {
+      "label": "Declared bytes suppress-startup-activation",
+      "ok": true
+    },
+    {
+      "label": "Declared bytes suppress-startup-network-dialog",
+      "ok": true
+    },
+    {
+      "label": "Declared bytes loopback-api-listener",
+      "ok": true
+    },
+    {
+      "label": "No undeclared source-byte changes",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "failures": [],
+  "securityDirectory": {
+    "offset": 0,
+    "size": 0
+  },
+  "newSection": {
+    "name": ".umcore",
+    "virtual": 26,
+    "rva": 22298624,
+    "rawSize": 512,
+    "raw": 19616256,
+    "flags": 1610612768
+  }
+}

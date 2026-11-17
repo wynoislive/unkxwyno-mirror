@@ -1,0 +1,331 @@
+{
+  "schemaVersion": "uizze.visual-evidence.v1",
+  "platform": "windows",
+  "scope": "New native Windows desktop interface and separate package; eight states and eleven interactions. Windows is an explicit extension to a helper that currently accepts only web/iOS/Android.",
+  "sources": [
+    {
+      "path": "../../src/app/Desktop.cs",
+      "sha256": "87a46bdca5c415dd1b315287c6d71437d98d5270be0e8756660c6ce2267a0cda"
+    },
+    {
+      "path": "../../src/app/MainWindow.xaml",
+      "sha256": "ccb719003232096073c854ee1c1016ecd7531853374b672d440aaec88aa2bc7f"
+    },
+    {
+      "path": "../../src/app/MirrorApiClient.cs",
+      "sha256": "3e4596333388b9b144d78c20074a8c71868b225055096bb4c02238437c6cecde"
+    },
+    {
+      "path": "../../src/app/AppSettings.cs",
+      "sha256": "c7acbab9be0e0236ddfcfdbfb3693c8a1940e86f7eead9f1e69ae8b165eff2c6"
+    },
+    {
+      "path": "../../src/app/EngineHost.cs",
+      "sha256": "857358767d4e9b9c9b4970c23a32404b9b3597e146c36d1296b0b4693812fb8d"
+    },
+    {
+      "path": "../../src/app/app.manifest",
+      "sha256": "8cd8e54a4e91958f707baf48d19117c933847359209e9672f5b9fd61e8d6def7"
+    },
+    {
+      "path": "../../src/app/unkxwyno-mirror.exe.config",
+      "sha256": "34d367e429d5d424930ba9dd0f1cd1d41f8d05de66487ac8159b97bf0cc701a4"
+    },
+    {
+      "path": "../../src/app/assets/mark.svg",
+      "sha256": "acb427001836eae54d18aa65adc0325f31f04fdfc7d94ae90da538cd71bda544"
+    },
+    {
+      "path": "../../src/app/obj/mark.ico",
+      "sha256": "5f61fd0c6e19158da68a2889685c7d20d7099f29fa8a55b6c7504e051351e711"
+    },
+    {
+      "path": "../../src/build/build-desktop.ps1",
+      "sha256": "a402648dabf72f05f45676f6647f8ca666a097deea6d20ec6438aadbe589dccd"
+    },
+    {
+      "path": "../../release/unkxwyno-mirror/unkxwyno-mirror.exe",
+      "sha256": "7c56bedb1ea05fbfe12a31a97aa856068cf80ad0c895a44f15988ec6566e30f0"
+    }
+  ],
+  "comparison": "target",
+  "target": {
+    "path": "target.png",
+    "kind": "image",
+    "sha256": "7cd50b0ba96d31559acf547fe8d5ac9e5eb2e7926453c14d364d6db52c93616b"
+  },
+  "targetDimensions": {
+    "width": 1536,
+    "height": 1024
+  },
+  "comparisonNotes": [
+    "Saved target inspected against the actual native composition. Text/controls/icons are authored WPF, not screenshot fragments.",
+    "Receiver name and Android guidance intentionally correct unsupported target copy.",
+    "The exact 1536x1024 target size is covered by source-only XAML preview. Actual compiled WPF review is 1536x882 on this desktop plus 1112x652 compact captures. No exact-size runtime pixel-match claim."
+  ],
+  "requiredChecks": [
+    {
+      "id": "wide-devices",
+      "kind": "visual"
+    },
+    {
+      "id": "compact-devices",
+      "kind": "visual"
+    },
+    {
+      "id": "connect",
+      "kind": "visual"
+    },
+    {
+      "id": "captures",
+      "kind": "visual"
+    },
+    {
+      "id": "settings",
+      "kind": "visual"
+    },
+    {
+      "id": "invalid-settings",
+      "kind": "visual"
+    },
+    {
+      "id": "guide",
+      "kind": "visual"
+    },
+    {
+      "id": "recovery",
+      "kind": "visual"
+    },
+    {
+      "id": "ui-interactions",
+      "kind": "interaction"
+    },
+    {
+      "id": "live-receiver",
+      "kind": "interaction"
+    }
+  ],
+  "checks": [
+    {
+      "id": "wide-devices",
+      "status": "pass",
+      "state": "Empty workspace on wide desktop",
+      "environment": {
+        "kind": "device",
+        "name": "Windows native WPF application review mode; backend disabled",
+        "width": 1536,
+        "height": 882
+      },
+      "observed": "Light native workbench, vector phone illustration, teal connect action and supplemental guide. Runtime window height is constrained by this desktop work area; target is a composition reference, not a pixel match.",
+      "artifacts": [
+        {
+          "path": "application-captures/app-devices-1536.png",
+          "kind": "image",
+          "sha256": "cd6c624c250f971e6da9e08a7cb329bd30474067830c58498d2cc7b787dffebc"
+        }
+      ]
+    },
+    {
+      "id": "compact-devices",
+      "status": "pass",
+      "state": "Empty workspace at reported compact viewport",
+      "environment": {
+        "kind": "device",
+        "name": "Windows native WPF application review mode; backend disabled",
+        "width": 1112,
+        "height": 652
+      },
+      "observed": "Primary task and illustration fit; supplemental panel collapses. New frontend shows no account or purchase navigation.",
+      "artifacts": [
+        {
+          "path": "application-captures/app-devices-1112.png",
+          "kind": "image",
+          "sha256": "cda4d05e397ddd344e46279c6a1de95091164fac11228f6a5f1e173bb0956afa"
+        }
+      ]
+    },
+    {
+      "id": "connect",
+      "status": "pass",
+      "state": "Connection dialog",
+      "environment": {
+        "kind": "device",
+        "name": "Windows native WPF application review mode; backend disabled",
+        "width": 1112,
+        "height": 652
+      },
+      "observed": "Phone/transport selectors, actual configured receiver label, instructions and start action fit without clipping.",
+      "artifacts": [
+        {
+          "path": "application-captures/app-connect-1112.png",
+          "kind": "image",
+          "sha256": "e2df2c9a0c4bd6052c0ae5e1dd68fbe992117cdc52836c84e5578935b0f363bb"
+        }
+      ]
+    },
+    {
+      "id": "captures",
+      "status": "pass",
+      "state": "Captures empty state",
+      "environment": {
+        "kind": "device",
+        "name": "Windows native WPF application review mode; backend disabled",
+        "width": 1112,
+        "height": 652
+      },
+      "observed": "No fabricated snapshots; clear empty state and folder action.",
+      "artifacts": [
+        {
+          "path": "application-captures/app-capturesview-1112.png",
+          "kind": "image",
+          "sha256": "9579f5ed6c462b23d7a7bc0cbbf4e3f9a21cd06420521ddcddac255c6dded8c0"
+        }
+      ]
+    },
+    {
+      "id": "settings",
+      "status": "pass",
+      "state": "Settings",
+      "environment": {
+        "kind": "device",
+        "name": "Windows native WPF application review mode; backend disabled",
+        "width": 1112,
+        "height": 652
+      },
+      "observed": "Native labeled inputs fit. Additional controls and diagnostics are reachable by vertical scrolling.",
+      "artifacts": [
+        {
+          "path": "application-captures/app-settingsview-1112.png",
+          "kind": "image",
+          "sha256": "8b947490d047eed6ee079eb36f33d3733b32ba8db10909a0b471dc1027879f74"
+        }
+      ]
+    },
+    {
+      "id": "invalid-settings",
+      "status": "pass",
+      "state": "Invalid receiver address",
+      "environment": {
+        "kind": "device",
+        "name": "Windows native WPF application review mode; backend disabled",
+        "width": 1112,
+        "height": 652
+      },
+      "observed": "Inline explanatory error and tinted field; accessible invalid ItemStatus set. Receiver retry action hidden for settings validation errors.",
+      "artifacts": [
+        {
+          "path": "application-captures/app-settings-invalid-1112.png",
+          "kind": "image",
+          "sha256": "8f10e44e16eaf027df718d628751652ba5dc9d2573f2a413cd630f9cf5ff085b"
+        }
+      ]
+    },
+    {
+      "id": "guide",
+      "status": "pass",
+      "state": "Connection guide",
+      "environment": {
+        "kind": "device",
+        "name": "Windows native WPF application review mode; backend disabled",
+        "width": 1112,
+        "height": 652
+      },
+      "observed": "Readable step cards and scrolling. USB driver and Android sender requirements are explicit.",
+      "artifacts": [
+        {
+          "path": "application-captures/app-guideview-1112.png",
+          "kind": "image",
+          "sha256": "3072e819e2661fdc125ce03b5218eae61194d85c98fdc4cca367c76cbe9a50bf"
+        }
+      ]
+    },
+    {
+      "id": "recovery",
+      "status": "pass",
+      "state": "Receiver unavailable",
+      "environment": {
+        "kind": "device",
+        "name": "Windows native WPF application review mode; backend disabled",
+        "width": 1112,
+        "height": 652
+      },
+      "observed": "Inline error and retry fit; workspace remains visible. No native backend was started to create this deliberate review state.",
+      "artifacts": [
+        {
+          "path": "application-captures/app-recovery-1112.png",
+          "kind": "image",
+          "sha256": "f1ca7f2cbfa70b27d3ed4bf5aa92ed6cb25404360d463ccfcbf70b62653957d8"
+        }
+      ]
+    },
+    {
+      "id": "ui-interactions",
+      "status": "pass",
+      "state": "Native click and selection events with isolated review state",
+      "environment": {
+        "kind": "device",
+        "name": "Windows native WPF application review mode; backend disabled",
+        "width": 1112,
+        "height": 652
+      },
+      "observed": "Eleven native UI checks passed, including navigation, bound modal visibility, selector instructions, invalid-input correction and revisit, recovery and disabled disconnected capture.",
+      "steps": [
+        "review starts without a receiver or invented device",
+        "compact layout retains the workspace and collapses supplementary guide",
+        "connect button opens the bound dialog",
+        "phone and transport selectors update real instruction bindings",
+        "close action dismisses the overlay",
+        "CapturesView navigation and selection",
+        "SettingsView navigation and selection",
+        "invalid settings show inline and accessible field feedback; correction clears the error without writing settings",
+        "leaving and revisiting settings retains corrected input without stale error state",
+        "GuideView navigation and selection",
+        "inline recovery banner with disconnected capture action disabled"
+      ],
+      "artifacts": [
+        {
+          "path": "application-captures/app-connect-1112.png",
+          "kind": "image",
+          "sha256": "e2df2c9a0c4bd6052c0ae5e1dd68fbe992117cdc52836c84e5578935b0f363bb"
+        },
+        {
+          "path": "application-captures/app-settings-invalid-1112.png",
+          "kind": "image",
+          "sha256": "8f10e44e16eaf027df718d628751652ba5dc9d2573f2a413cd630f9cf5ff085b"
+        }
+      ]
+    },
+    {
+      "id": "live-receiver",
+      "status": "blocked",
+      "state": "Real phone connection",
+      "environment": {
+        "kind": "device",
+        "name": "Windows native WPF application review mode; backend disabled",
+        "width": 1112,
+        "height": 652
+      },
+      "observed": "No authorized native receiver runtime observation or phone connection was performed. UI review explicitly prevents backend startup, phone access and product settings writes.",
+      "steps": [
+        "Not run; static analysis and fixture HTTP traffic do not establish native mirroring."
+      ],
+      "artifacts": []
+    }
+  ],
+  "additionalEvidence": [
+    {
+      "path": "application-captures/render-result.json",
+      "sha256": "b8175ebf2b990c65d4df10d4ba799cd7020bca2a64a6dabf198cd272ae604925"
+    },
+    {
+      "path": "captures/devices-1536.png",
+      "kind": "image",
+      "sha256": "40e3d3c020da399bc804f1902db047140420515382353a25e8c0176f5f0b7c87"
+    }
+  ],
+  "unresolved": [
+    "Native Windows is not an accepted platform in the supplied integrity helper; do not mislabel this as web/iOS/Android.",
+    "Real receiver startup, profile-path isolation, native-window suppression, live phone video and complete premium independence are unverified.",
+    "Original recording, virtual-camera and broadcast/quality controls are not yet exposed by the new frontend."
+  ]
+}

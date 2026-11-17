@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="UnkxwynoMirror.Desktop.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="UNKXWYNO Mirror"
+    mc:Ignorable="d">
+
+    <Grid x:Name="RootLayout" Background="{StaticResource GroundBrush}" Loaded="OnLoaded" SizeChanged="OnRootSizeChanged">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="64" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="52" />
+        </Grid.RowDefinitions>
+
+        <Border x:Name="HeaderDragRegion" Grid.Row="0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="24,0,160,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <FontIcon Glyph="&#xE7F4;" FontSize="24" Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="UNKXWYNO MIRROR" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" VerticalAlignment="Center" Margin="14,0,24,0" />
+                <Border Grid.Column="2" Background="{StaticResource RaisedBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,6" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <TextBlock x:Name="EngineStatusText" Text="Independent engine · Checking" Foreground="{StaticResource SecondaryTextBrush}" />
+                </Border>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="208" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition x:Name="ConnectionColumn" Width="320" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="{StaticResource NavigationBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
+                <StackPanel Margin="0,20">
+                    <Button x:Name="HomeNavButton" Style="{StaticResource NavButtonStyle}" Click="OnNavigate" Tag="Home" AutomationProperties.Name="Home">
+                        <StackPanel Orientation="Horizontal" Spacing="14"><FontIcon Glyph="&#xE80F;" /><TextBlock Text="Home" FontSize="16" /></StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource NavButtonStyle}" Click="OnNavigate" Tag="Devices" AutomationProperties.Name="Devices">
+                        <StackPanel Orientation="Horizontal" Spacing="14"><FontIcon Glyph="&#xE7F4;" /><TextBlock Text="Devices" FontSize="16" /></StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource NavButtonStyle}" Click="OnNavigate" Tag="Captures" AutomationProperties.Name="Captures">
+                        <StackPanel Orientation="Horizontal" Spacing="14"><FontIcon Glyph="&#xE722;" /><TextBlock Text="Captures" FontSize="16" /></StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource NavButtonStyle}" Click="OnNavigate" Tag="Settings" AutomationProperties.Name="Settings">
+                        <StackPanel Orientation="Horizontal" Spacing="14"><FontIcon Glyph="&#xE713;" /><TextBlock Text="Settings" FontSize="16" /></StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource NavButtonStyle}" Click="OnNavigate" Tag="Diagnostics" AutomationProperties.Name="Diagnostics">
+                        <StackPanel Orientation="Horizontal" Spacing="14"><FontIcon Glyph="&#xE9D9;" /><TextBlock Text="Diagnostics" FontSize="16" /></StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <Grid Grid.Column="1" Margin="16">
+                <Border x:Name="HomeView" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="32">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" VerticalContentAlignment="Center">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="560" Spacing="14">
+                        <FontIcon Glyph="&#xE7F4;" FontSize="80" Foreground="{StaticResource SecondaryTextBrush}" />
+                        <TextBlock x:Name="MirrorHeadingText" Text="No active stream" FontSize="34" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" TextAlignment="Center" TextWrapping="Wrap" />
+                        <TextBlock x:Name="MirrorDetailText" Text="Choose a local device to start mirroring." FontSize="18" Foreground="{StaticResource SecondaryTextBrush}" TextAlignment="Center" TextWrapping="Wrap" />
+                        <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center" Margin="0,18,0,0">
+                            <Button x:Name="FindDevicesButton" Style="{StaticResource PrimaryActionStyle}" Click="OnFindDevices" Content="Find devices" AutomationProperties.HelpText="Search the local network for UNKXWYNO companions" />
+                            <Button Style="{StaticResource SecondaryActionStyle}" Click="OnPairManually" Content="Pair manually" AutomationProperties.HelpText="Enter a local peer address; secure pairing remains required" />
+                        </StackPanel>
+                        <HyperlinkButton x:Name="CompactConnectionButton" Visibility="Collapsed" Content="Connection guide" Click="OnCompactConnectionGuide" HorizontalAlignment="Center" Foreground="{StaticResource AccentBrush}" AutomationProperties.HelpText="Show local Wi-Fi and USB availability" />
+                        <HyperlinkButton x:Name="CompactCheckUsbButton" Visibility="Collapsed" Content="Mirror iPhone USB" Click="OnCheckUsb" HorizontalAlignment="Center" Foreground="{StaticResource AccentBrush}" />
+                        <InfoBar x:Name="HomeInfoBar" IsOpen="False" IsClosable="True" Severity="Informational" Margin="0,12,0,0" />
+                    </StackPanel>
+                    </ScrollViewer>
+                </Border>
+
+                <Border x:Name="DevicesView" Visibility="Collapsed" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="28">
+                    <Grid>
+                        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+                        <Grid><TextBlock Text="Local devices" FontSize="28" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" /><Button Content="Refresh" HorizontalAlignment="Right" Click="OnFindDevices" /></Grid>
+                        <Grid Grid.Row="1" Margin="0,20,0,0">
+                            <ListView x:Name="DevicesList" SelectionMode="Single" />
+                            <TextBlock x:Name="EmptyDevicesText"
+                                       Text="No UNKXWYNO companions discovered on the local network."
+                                       Foreground="{StaticResource SecondaryTextBrush}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       TextAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       MaxWidth="420"
+                                       IsHitTestVisible="False" />
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <Border x:Name="CapturesView" Visibility="Collapsed" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="28">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="14">
+                        <FontIcon Glyph="&#xE722;" FontSize="64" Foreground="{StaticResource SecondaryTextBrush}" />
+                        <TextBlock Text="No independent captures yet" FontSize="26" Foreground="{StaticResource PrimaryTextBrush}" />
+                        <TextBlock Text="Screenshots and recordings will appear only after a verified stream is active." Foreground="{StaticResource SecondaryTextBrush}" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="520" />
+                        <Button Content="Open capture folder" Click="OnOpenCaptureFolder" />
+                    </StackPanel>
+                </Border>
+
+                <Border x:Name="SettingsView" Visibility="Collapsed" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="28">
+                    <ScrollViewer>
+                        <StackPanel Spacing="14" MaxWidth="640" HorizontalAlignment="Left">
+                            <TextBlock Text="Quality" FontSize="28" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" />
+                            <TextBlock Text="Every preset is free. Availability depends only on measured hardware and transport capability." Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" />
+                            <TextBlock Text="Resolution" Foreground="{StaticResource PrimaryTextBrush}" Margin="0,8,0,0" />
+                            <ComboBox x:Name="ResolutionCombo" MinWidth="320" SelectionChanged="OnQualityChanged" DisplayMemberPath="Label" AutomationProperties.Name="Requested resolution" />
+                            <TextBlock Text="Frame rate" Foreground="{StaticResource PrimaryTextBrush}" Margin="0,8,0,0" />
+                            <ComboBox x:Name="FrameRateCombo" MinWidth="320" SelectionChanged="OnQualityChanged" DisplayMemberPath="Label" AutomationProperties.Name="Requested frame rate" />
+                            <ToggleSwitch Header="Adaptive bitrate" IsOn="True" IsEnabled="False" OffContent="Unavailable" OnContent="Requested" ToolTipService.ToolTip="Enabled when a secure stream and encoder are active." />
+                            <InfoBar x:Name="CapabilityInfoBar" IsOpen="True" IsClosable="False" Severity="Warning" Title="Not negotiated" Message="Connect a source and receiver before the app can activate a quality profile." />
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+
+                <Border x:Name="DiagnosticsView" Visibility="Collapsed" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="28">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Spacing="14" MaxWidth="720" HorizontalAlignment="Left">
+                            <TextBlock Text="Diagnostics" FontSize="28" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" />
+                            <TextBlock Text="Live application state and local support paths. Stream metrics remain unavailable until a verified stream is active." Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" />
+                            <Grid Margin="0,8,0,0" ColumnSpacing="20" RowSpacing="12">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="150" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Text="Build" Foreground="{StaticResource SecondaryTextBrush}" />
+                                <TextBlock x:Name="DiagnosticsBuildText" Grid.Row="0" Grid.Column="1" Foreground="{StaticResource PrimaryTextBrush}" TextWrapping="Wrap" />
+                                <TextBlock Grid.Row="1" Text="Independent core" Foreground="{StaticResource SecondaryTextBrush}" />
+                                <TextBlock x:Name="DiagnosticsCoreText" Grid.Row="1" Grid.Column="1" Foreground="{StaticResource PrimaryTextBrush}" TextWrapping="Wrap" />
+                                <TextBlock Grid.Row="2" Text="Local discovery" Foreground="{StaticResource SecondaryTextBrush}" />
+                                <TextBlock x:Name="DiagnosticsDiscoveryText" Grid.Row="2" Grid.Column="1" Foreground="{StaticResource PrimaryTextBrush}" TextWrapping="Wrap" />
+                                <TextBlock Grid.Row="3" Text="Quality" Foreground="{StaticResource SecondaryTextBrush}" />
+                                <TextBlock x:Name="DiagnosticsQualityText" Grid.Row="3" Grid.Column="1" Foreground="{StaticResource PrimaryTextBrush}" TextWrapping="Wrap" />
+                                <TextBlock Grid.Row="4" Text="Settings file" Foreground="{StaticResource SecondaryTextBrush}" />
+                                <TextBlock x:Name="DiagnosticsSettingsPathText" Grid.Row="4" Grid.Column="1" Foreground="{StaticResource PrimaryTextBrush}" TextWrapping="Wrap" />
+                                <TextBlock Grid.Row="5" Text="Log file" Foreground="{StaticResource SecondaryTextBrush}" />
+                                <TextBlock x:Name="DiagnosticsLogPathText" Grid.Row="5" Grid.Column="1" Foreground="{StaticResource PrimaryTextBrush}" TextWrapping="Wrap" />
+                            </Grid>
+                            <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,8,0,0">
+                                <Button Content="Refresh status" Click="OnRefreshDiagnostics" AutomationProperties.Name="Refresh diagnostic status" />
+                                <Button Content="Open log folder" Click="OnOpenLogFolder" AutomationProperties.Name="Open diagnostics log folder" />
+                            </StackPanel>
+                            <InfoBar IsOpen="True" IsClosable="False" Severity="Informational" Title="Privacy" Message="Diagnostics stay on this PC. Peer addresses are not written to the application log." />
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+
+            <Border x:Name="ConnectionPanel" Grid.Column="2" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Margin="0,16,16,16" Padding="22">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Connection" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" />
+                        <TextBlock Text="Transport" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" />
+                        <RadioButtons x:Name="TransportSelector" SelectedIndex="0" SelectionChanged="OnTransportChanged">
+                            <x:String>Local Wi-Fi</x:String>
+                            <x:String>USB</x:String>
+                        </RadioButtons>
+                        <Button x:Name="CheckUsbButton" Content="Mirror iPhone USB" Click="OnCheckUsb" AutomationProperties.HelpText="Start wired capture. Windows approval is requested if temporary access through an already installed capture driver is needed; the Apple driver is restored afterward." />
+                        <TextBlock x:Name="UsbStatusText" Text="USB has not been checked." TextWrapping="Wrap" Foreground="{StaticResource SecondaryTextBrush}" />
+                        <TextBlock Text="Setup guide" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" Margin="0,8,0,0" />
+                        <TextBlock x:Name="SetupGuideText" Text="1  Connect this PC and your device to the same local network.&#x0a;2  Open the UNKXWYNO companion on your device.&#x0a;3  Find and approve this PC when it appears." TextWrapping="Wrap" Foreground="{StaticResource PrimaryTextBrush}" LineHeight="24" />
+                        <Rectangle Height="1" Fill="{StaticResource BorderBrush}" Margin="0,8" />
+                        <TextBlock Text="Hardware support is checked before streaming." TextWrapping="Wrap" Foreground="{StaticResource SecondaryTextBrush}" />
+                        <HyperlinkButton Content="View compatibility" Click="OnViewCompatibility" Foreground="{StaticResource AccentBrush}" HorizontalAlignment="Left" Padding="0" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <Border Grid.Row="2" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="24,0">
+            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                <TextBlock Text="Requested" Foreground="{StaticResource SecondaryTextBrush}" />
+                <TextBlock x:Name="RequestedStatusText" Text="Auto · Auto FPS" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" />
+                <TextBlock Text="·  Actual" Foreground="{StaticResource SecondaryTextBrush}" />
+                <TextBlock x:Name="ActualStatusText" Text="—" Foreground="{StaticResource PrimaryTextBrush}" />
+                <TextBlock Text="·  Host sample-to-paint time in USB status" Foreground="{StaticResource SecondaryTextBrush}" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
+

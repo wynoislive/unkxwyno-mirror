@@ -1,0 +1,107 @@
+{
+    "schemaVersion":  "native-wpf-review.v1",
+    "scope":  "Dark WPF interface review. Review mode prevents receiver startup, phone access, and settings writes.",
+    "runPath":  "../../test/ui-review-dark-b7dedf6cd30b41cd87c3cd2244af34d7",
+    "reviewExecutable":  {
+                             "path":  "../../test/ui-review-dark-b7dedf6cd30b41cd87c3cd2244af34d7/unkxwyno-mirror-review.exe",
+                             "sha256":  "cfafea3eae667a802eafc66e817b45c0a5f83c3f643846a68392d0f0ffdce27a",
+                             "manifest":  "asInvoker; review-only",
+                             "backendExecuted":  false,
+                             "phoneAccessed":  false,
+                             "settingsWritten":  false
+                         },
+    "sources":  [
+                    {
+                        "path":  "../../src/app/Desktop.cs",
+                        "sha256":  "0896bbe499fab87402556231c166de3199c9a1c425809303b8e6cd06ff250f90"
+                    },
+                    {
+                        "path":  "../../src/app/MainWindow.xaml",
+                        "sha256":  "107cb8622487d1ead4d0f247c7de5b42ce59541d455a296ec1a5b671dd744aa5"
+                    },
+                    {
+                        "path":  "../../src/app/AppSettings.cs",
+                        "sha256":  "2e719992a2d73fdeee14cf10bfffc3a7ec392846055c4842ef677d2d9ab10c4e"
+                    },
+                    {
+                        "path":  "../../src/app/EngineHost.cs",
+                        "sha256":  "e6dc70faea414daf156840758b1102a88725cbad6c8cdc9a58ccf342d73f786a"
+                    }
+                ],
+    "checkCount":  12,
+    "checks":  [
+                   "review starts without a receiver or invented device",
+                   "compact layout retains the workspace and collapses supplementary guide",
+                   "connect button opens the bound dialog",
+                   "phone and transport selectors update real instruction bindings",
+                   "close action dismisses the overlay",
+                   "CapturesView navigation and selection",
+                   "SettingsView navigation and selection",
+                   "themed selector opens a measurable options list",
+                   "invalid settings show inline and accessible field feedback; correction clears the error without writing settings",
+                   "leaving and revisiting settings retains corrected input without stale error state",
+                   "GuideView navigation and selection",
+                   "inline recovery banner with disconnected capture action disabled"
+               ],
+    "captures":  [
+                     {
+                         "path":  "../../test/ui-review-dark-b7dedf6cd30b41cd87c3cd2244af34d7/app-capturesview-1112.png",
+                         "sha256":  "8b60b44d4280fb12a18f90f4f1bda73869de93193692d49fe9d93407f3cffc15",
+                         "width":  1112,
+                         "height":  652
+                     },
+                     {
+                         "path":  "../../test/ui-review-dark-b7dedf6cd30b41cd87c3cd2244af34d7/app-connect-1112.png",
+                         "sha256":  "dc47dc8759aef972ad9e7eaec6ebe635053e6df0375b0b500dd13db0e6046f4b",
+                         "width":  1112,
+                         "height":  652
+                     },
+                     {
+                         "path":  "../../test/ui-review-dark-b7dedf6cd30b41cd87c3cd2244af34d7/app-devices-1112.png",
+                         "sha256":  "2e9595f6a815257a36a75ec6a1440fe2aeb811cf4f9c59d4ca8b6674819b9e3d",
+                         "width":  1112,
+                         "height":  652
+                     },
+                     {
+                         "path":  "../../test/ui-review-dark-b7dedf6cd30b41cd87c3cd2244af34d7/app-devices-1536.png",
+                         "sha256":  "82378b275361814d801d71d24e5fd7df14a3fbb7fbd392526351c6f13ceff307",
+                         "width":  1536,
+                         "height":  882
+                     },
+                     {
+                         "path":  "../../test/ui-review-dark-b7dedf6cd30b41cd87c3cd2244af34d7/app-guideview-1112.png",
+                         "sha256":  "b66fcdbe2bc403a8ae182bb72e8e87b5ac06726245dc654c912aed1d3bdd5b53",
+                         "width":  1112,
+                         "height":  652
+                     },
+                     {
+                         "path":  "../../test/ui-review-dark-b7dedf6cd30b41cd87c3cd2244af34d7/app-recovery-1112.png",
+                         "sha256":  "f035badb6c17da9e4536951fe18bfb126c9ea4ac37f9fc4e118b7c3d43be420a",
+                         "width":  1112,
+                         "height":  652
+                     },
+                     {
+                         "path":  "../../test/ui-review-dark-b7dedf6cd30b41cd87c3cd2244af34d7/app-settings-invalid-1112.png",
+                         "sha256":  "b38ea1fd8a40e1101e46f3b89148cc190e4f0640147db4cd043e8732823e971e",
+                         "width":  1112,
+                         "height":  652
+                     },
+                     {
+                         "path":  "../../test/ui-review-dark-b7dedf6cd30b41cd87c3cd2244af34d7/app-settings-options-1112.png",
+                         "sha256":  "b0711480646544fdad0ba54add52b2756549f197c2271aa1c03510eac5eab699",
+                         "width":  268,
+                         "height":  105
+                     },
+                     {
+                         "path":  "../../test/ui-review-dark-b7dedf6cd30b41cd87c3cd2244af34d7/app-settingsview-1112.png",
+                         "sha256":  "4078448611241ceeb1e6ca4884bbcb199a6a3ad83d11d233413945adc8e8bd90",
+                         "width":  1112,
+                         "height":  652
+                     }
+                 ],
+    "limitations":  [
+                        "These captures verify the compiled interface only.",
+                        "They do not verify actual receiver startup, AirPlay discovery, USB pairing, phone video, Android compatibility, or independent deployment.",
+                        "The reviewed application package and production release binary were not rebuilt."
+                    ]
+}

@@ -1,29 +1,68 @@
-# Binaries & Build Artifacts
-bin/
-obj/
+# Independent build outputs
+**/bin/
+**/obj/
 build/
-*.o
-*.obj
-*.dll
-*.exe
-*.so
-*.dylib
-*.pdb
-
-# Gradle & Android
-.gradle/
-local.properties
+out/
+.vs/
 .idea/
-*.apk
-*.aab
+.gradle/
+**/.gradle/
+*.user
+*.suo
+*.tmp
+*.log
 
-# OS files
-.DS_Store
-Thumbs.db
+# Local signing material and private configuration
+*.pfx
+*.p12
+*.mobileprovision
+*.keystore
+*.jks
+*.key
+*.pem
+.env
+.env.*
+local.properties
 
-# Release artifacts directory
-release_artifacts/
+# Immutable proprietary and legacy workspaces are intentionally outside the
+# independent source history. They remain on disk for evidence and rollback.
+/.agents/
+/ready-products/
+/release/
+/refrence/
+/sample/
+/scratch/
+/src/*
+!/src/backend/
+/src/backend/*
+!/src/backend/independent/
+/test/
+/test-files/
 
-# Research & Reversing Targets (Keep clean-room open-source repo free of vendor binaries)
-source_sample_examples/
-output/
+# Existing reverse-engineering evidence is preserved locally but is not part of
+# the new MIT source distribution.
+docs/douwan-architecture/
+docs/backend-reconstruction-20261114/raw/
+docs/douwan-integration-audit/
+docs/douwan-static-pass/
+docs/letsview-static-pass/
+docs/modified-build/
+docs/native-analysis/
+docs/personal-exe-check/
+docs/ui/archive/
+docs/ui/application-captures/
+docs/ui/captures/
+docs/ui/engine-investigation/
+docs/usb-investigation/
+docs/*.evidence.json
+docs/*.inspect-*.json
+docs/*.summary.json
+
+# Generated diagnostics and captures
+tests/results/
+tests/artifacts/
+*.dmp
+*.etl
+*.pcap
+*.pcapng
+
